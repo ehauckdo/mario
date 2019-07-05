@@ -73,23 +73,8 @@ def runGrammar(length=9):
 
 	rules["A"] = {}
 	rules["A"]["chance"] = 1
-	rules["A"]["rules"] = ["aA", "aB", "B"]
-	rules["A"]["weights"] = [0.2, 0.6, 0.2]
-
-	rules["B"] = {}
-	rules["B"]["chance"] = 1
-	rules["B"]["rules"] = ["bBA", "baCB"]
-	rules["B"]["weights"] = [0.3, 0.7]
-
-	rules["C"] = {}
-	rules["C"]["chance"] = 1
-	rules["C"]["rules"] = ["c", "bc"]
-	rules["C"]["weights"] = [0.3, 0.7]   
-
-	rules["D"] = {}
-	rules["D"]["chance"] = 1	
-	rules["D"]["rules"] = ["bb", "aa", "c"]
-	rules["D"]["weights"] = [0.3, 0.5, 0.2]  
+	rules["A"]["rules"] = ["aA", "bA", "cA"]
+	rules["A"]["weights"] = [0.3, 0.4, 0.3]
 
 	def expand(grammar_string):
 		new_string = ""
