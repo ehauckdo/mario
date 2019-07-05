@@ -45,6 +45,15 @@ def parseGrammarString(mapp, grammar):
 		mapp[-2][x] = mapp[-2][x+1] = "t"
 		mapp[-3][x] = mapp[-3][x+1] = "T"
 
+	# add a platform with coins
+	def d(mapp, start_x):
+		addGround(mapp, start_x)
+		x_gap_middle = random.choice(range(start_x+4,start_x+8))
+		for x in range(x_gap_middle-3, x_gap_middle+3):
+			mapp[-5][x] = "X"
+			if x != x_gap_middle-3 and x != x_gap_middle+2:
+				mapp[-6][x] = "o"
+
 	# add 15 ground blocks for the first section
 	for x in range(0, 15):
 		mapp[-1][x] = "X"
@@ -56,6 +65,7 @@ def parseGrammarString(mapp, grammar):
 		if char == "a":   a(mapp, x)
 		elif char == "b": b(mapp, x)
 		elif char == "c": c(mapp, x)
+		elif char == "d": d(mapp, x)
 		
 		addPadding(mapp, x+12)
 		x = x + 15
@@ -73,8 +83,8 @@ def runGrammar(length=9):
 
 	rules["A"] = {}
 	rules["A"]["chance"] = 1
-	rules["A"]["rules"] = ["aA", "bA", "cA"]
-	rules["A"]["weights"] = [0.3, 0.4, 0.3]
+	rules["A"]["rules"] = ["aA", "bA", "cA", "dA"]
+	rules["A"]["weights"] = [0.25, 0.25, 0.25, 0.25]
 
 	def expand(grammar_string):
 		new_string = ""
@@ -103,4 +113,4 @@ grammar = runGrammar()
 parseGrammarString(map_matrix, grammar)
 print("Generated string: "+grammar)
 printMap(map_matrix)
-#saveMap(map_matrix)
+saveMap(map_matrix)
