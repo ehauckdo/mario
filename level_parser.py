@@ -1,8 +1,8 @@
 import sys
-from metrics import calculateLeniency
+import metrics
 import os, logging
 
-def readMaps(folder):
+def read_maps(folder):
 	map_files = os.listdir(folder)
 	maps = {}
 
@@ -26,21 +26,18 @@ def normalize(number_list):
 	for i, val in enumerate(number_list):
 		number_list[i] = (val-amin) / (amax-amin)
 
-def printMap(map):
 
-	for line in map:
-		string = ""
-		for char in line:
-			string += char
-		print(string)
+maps = read_maps("data/mapsNotchDif4")
 
-maps = readMaps("mapsNotchDif4")
+# calculate the leniency for all the maps found
+leniency = []
 for key, value in maps.items():
-	#print(key)
-	print(calculateLeniency(maps[key]))
-	
+	leniency.append(metrics.calculate_leniency(maps[key]))
 
-calculateLeniency(maps["map9.txt"])
+# normalize and print leniency values
+normalize(leniency)
+for l in leniency:
+	print(l)
 
 	
 

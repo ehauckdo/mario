@@ -1,7 +1,7 @@
 import logging
 from statistics import mean
 
-def calculateLeniency(map_matrix):
+def calculate_leniency(map_matrix):
 
 	enemy_leniency = -1
 	powerup_leniency = 1
@@ -10,12 +10,12 @@ def calculateLeniency(map_matrix):
 	gap_leniency = -0.5
 	avggap_leniency = -1
 
-	gaps = findGaps(map_matrix)
-	enemies = findEnemies(map_matrix)
-	powerups = findPowerUps(map_matrix)
+	gaps = find_gaps(map_matrix)
+	enemies = find_enemies(map_matrix)
+	powerups = find_powerups(map_matrix)
 	gaps_width = mean(gaps) if len(gaps) > 0 else 0
-	cannon = findCannons(map_matrix)
-	flower = findFlowerPiranhas(map_matrix)
+	cannon = find_cannons(map_matrix)
+	flower = find_flowerpiranhas(map_matrix)
 
 	logging.info("Enemies: {}, Powerups: {}, Gaps: {}, Cannons: {}, Flowers: {}, Avg Gap:{}"\
 		.format(enemies, powerups, len(gaps), cannon, flower, gaps_width))
@@ -29,23 +29,7 @@ def calculateLeniency(map_matrix):
 
 	return score
 
-def enemiesAndPowerUps(map_matrix):
-	score = 0
-	# "L" gives an extra life, but I guess this is not
-	# really an advantage for a bot, is it?
-	powerups = ["@", "U"]
-	enemies = ["g", "E","y","Y","G","k","K","r"]
-	score = 0
-
-	for line in map_matrix:
-		for element in line:
-			if element in powerups:
-				score += 1
-			if element in enemies:
-				score -= 1
-	return score
-
-def findPowerUps(map_matrix):
+def find_powerups(map_matrix):
 	powerups = ["@", "U"]
 	count = 0
 	for line in map_matrix:
@@ -54,7 +38,7 @@ def findPowerUps(map_matrix):
 				count += 1
 	return count
 
-def findEnemies(map_matrix):
+def find_enemies(map_matrix):
 	enemies = ["g", "E","y","Y","G","k","K","r"]
 	count = 0
 	for line in map_matrix:
@@ -63,7 +47,7 @@ def findEnemies(map_matrix):
 				count += 1
 	return count
 
-def findGaps(map_matrix):
+def find_gaps(map_matrix):
 	bottom_row = map_matrix[-1]
 	gaps = []
 	x = 0
@@ -77,7 +61,7 @@ def findGaps(map_matrix):
 		x += 1
 	return gaps
 
-def findCannons(map_matrix):
+def find_cannons(map_matrix):
 	count = 0
 	y = 0
 	y_len = len(map_matrix[0])
@@ -96,7 +80,7 @@ def findCannons(map_matrix):
 		count += asterisk + B
 	return count
 
-def findFlowerPiranhas(map_matrix):
+def find_flowerpiranhas(map_matrix):
 	count = 0
 	y = 0
 	y_len = len(map_matrix[0])

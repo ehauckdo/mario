@@ -1,9 +1,9 @@
 import random, sys
-import mapMatrix
+import map_matrix
 
 # check if all characters on a string (up to the
 # length character) are terminals i.e. lower case
-def isAllTerminals(string, length):
+def is_only_terminals(string, length):
 	for i in range(len(string)):
 		if string[i].istitle():
 			return False
@@ -13,40 +13,40 @@ def isAllTerminals(string, length):
 
 # given the matrix of a map and a grammar string
 # parse the string and insert elements into the map
-def parseGrammarString(mapp, grammar):
+def parse_grammar(mapp, grammar):
 	
-	def addPadding(mapp, start_x):
+	def add_padding(mapp, start_x):
 		y = len(mapp)-1
 		for x in range(start_x, start_x+3):
 			mapp[len(mapp)-1][x] = "X"
 
-	def addGround(mapp, start_x, length=15):
+	def add_ground(mapp, start_x, length=15):
 		for x in range(start_x, start_x+length):
 			mapp[-1][x] = "X"
 
 	# add an enemy
 	def a(mapp, start_x):
-		addGround(mapp, start_x)
+		add_ground(mapp, start_x)
 		x = random.choice(range(start_x,start_x+12))
 		mapp[-2][x] = "g"
 
 	# add a gap
 	def b(mapp, start_x):
-		addGround(mapp, start_x)
+		add_ground(mapp, start_x)
 		x_gap_middle = random.choice(range(start_x+4,start_x+8))
 		for x in range(x_gap_middle-3, x_gap_middle+3):
 			mapp[-1][x] = "-"
 
 	# add a piranha plant
 	def c(mapp, start_x):
-		addGround(mapp, start_x)
+		add_ground(mapp, start_x)
 		x = random.choice(range(start_x,start_x+12))
 		mapp[-2][x] = mapp[-2][x+1] = "t"
 		mapp[-3][x] = mapp[-3][x+1] = "T"
 
 	# add a platform with coins
 	def d(mapp, start_x):
-		addGround(mapp, start_x)
+		add_ground(mapp, start_x)
 		x_gap_middle = random.choice(range(start_x+4,start_x+8))
 		for x in range(x_gap_middle-3, x_gap_middle+3):
 			mapp[-5][x] = "X"
@@ -66,12 +66,12 @@ def parseGrammarString(mapp, grammar):
 		elif char == "c": c(mapp, x)
 		elif char == "d": d(mapp, x)
 		
-		addPadding(mapp, x+12)
+		add_padding(mapp, x+12)
 		x = x + 15
 
 
 # generante a grammar string from an initial "S"
-def runGrammar(length=9):
+def run_grammar(length=9):
 
 	rules = {}
 
@@ -97,7 +97,7 @@ def runGrammar(length=9):
 	previous_string = None
 	grammar_string = "S"
 
-	while len(grammar_string) < length or isAllTerminals(grammar_string, length) == False:
+	while len(grammar_string) < length or is_only_terminals(grammar_string, length) == False:
 		previous_string = grammar_string
 		#print(grammar_string)
 		grammar_string = expand(grammar_string)
@@ -106,15 +106,15 @@ def runGrammar(length=9):
 
 
 # initialize an empty matrix for the map
-map_matrix = mapMatrix.initializeMap()
+matrix = map_matrix.initialize_map()
 
 # run the hard coded grammar to generate a new string
-grammar = runGrammar()
+grammar = run_grammar()
 
 # parse the string and save the result inside the matrix
-parseGrammarString(map_matrix, grammar)
+parse_grammar(matrix, grammar)
 
 print("Generated string: "+grammar)
-mapMatrix.printMap(map_matrix)
+map_matrix.print_map(matrix)
 
-mapMatrix.saveMap(map_matrix)
+map_matrix.save_map(matrix)

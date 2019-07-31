@@ -1,4 +1,4 @@
-def initializeMap():
+def initialize_map():
 	map = []
 	for y in range(16):
 		row = []
@@ -8,14 +8,14 @@ def initializeMap():
 	map[-2][2] = "M"
 	return map
 
-def printMap(map):
+def print_map(map):
 	for line in map:
 		string = ""
 		for char in line:
 			string += char
 		print(string)
 
-def saveMap(map, map_filename="map.txt"):
+def save_map(map, map_filename="map.txt"):
 	output_file = open(map_filename, "w")
 	
 	for line in map:
