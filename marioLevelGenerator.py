@@ -1,9 +1,8 @@
 import random, sys
-from mapMatrix import *
-
+import mapMatrix
 
 # check if all characters on a string (up to the
-# lengthᵗʰ character) are terminals i.e. lower case
+# length character) are terminals i.e. lower case
 def isAllTerminals(string, length):
 	for i in range(len(string)):
 		if string[i].istitle():
@@ -105,12 +104,17 @@ def runGrammar(length=9):
 
 	return grammar_string[:length]
 
-map_matrix = initializeMap()
 
+# initialize an empty matrix for the map
+map_matrix = mapMatrix.initializeMap()
+
+# run the hard coded grammar to generate a new string
 grammar = runGrammar()
 
-
+# parse the string and save the result inside the matrix
 parseGrammarString(map_matrix, grammar)
+
 print("Generated string: "+grammar)
-printMap(map_matrix)
-saveMap(map_matrix)
+mapMatrix.printMap(map_matrix)
+
+mapMatrix.saveMap(map_matrix)
