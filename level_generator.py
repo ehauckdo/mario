@@ -2,63 +2,22 @@ import random, sys
 import map_matrix
 import grammar
 
-def read_maps(folder="sections"):
-	import os
-	map_files = os.listdir(folder)
-	maps = {}
+# read folder that contains section maps
+# associated with production rules
+char_to_map = map_matrix.read_folder()
 
-	for m in map_files:
-		#logging.info("Parsing {}".format(m))
-		map = []
-		input_file = open(folder+"/"+m, "r")
-		for line in input_file:
-			map.append([])
-			for char in line[:-1]:
-				map[-1].append(char)
-	
-		maps[m] = map
+# get the handcrafted grammar production rules
+production_rules = grammar.get_grammar_rules()
 
-	return maps
+# generate a string using the production rules
+grammar_string = grammar.generate_string(production_rules)
 
-def print_map(map):
-	for line in map:
-		string = ""
-		for char in line:
-			string += char
-		print(string)
+# convert the string into a matrix structure
+matrix = grammar.string_to_map(grammar_string, char_to_map)
 
-
-sections = read_maps()
-
-def parse_grammar(mapp, grammar_string):
-
-	def add_intro(mapp):
-		# add a small 16x4 introduction
-		for y in range(16):
-			for x in range(4):
-				mapp[y].append("-")
-
-		for x in range(4):
-			mapp[-1][x] = "X"
-		mapp[-2][1] = "M" 
-
-	add_intro(mapp)
-
-	x = 0
-	for char in grammar_string:
-		step = grammar.apply_rule(mapp, x, char, sections)
-		x = x + step
-
-
-matrix = []
-for i in range(16):
-	matrix.append([])
-
-grammar_string = "abbcbd"
-
-# parse the string and save the result inside the matrix
-parse_grammar(matrix, grammar_string)
-
-print("Generated string: "+grammar_string)
-map_matrix.print_map(matrix)
+# save matrix structure into a file
 map_matrix.save_map(matrix)
+
+print("Generated string: {}".format(grammar_string))
+map_matrix.print_map(matrix)
+
