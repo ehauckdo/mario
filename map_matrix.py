@@ -1,8 +1,8 @@
-def initialize_map():
+def initialize_map(y_length=16,x_length=150):
 	map = []
-	for y in range(16):
+	for y in range(y_length):
 		row = []
-		for x in range(150):
+		for x in range(x_length):
 			row.append("-")
 		map.append(row)
 	map[-2][2] = "M"
