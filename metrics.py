@@ -1,7 +1,9 @@
-import logging
 from statistics import mean
+import logging, inspect
+logger = logging.getLogger(__name__)
 
 def calculate_leniency(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
 
 	enemy_leniency = -1
 	powerup_leniency = 1
@@ -27,27 +29,36 @@ def calculate_leniency(map_matrix):
 		+ gaps_width * avggap_leniency
 	logging.info("Score: {}".format(score))
 
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return score
 
 def find_powerups(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
+
 	powerups = ["@", "U"]
 	count = 0
 	for line in map_matrix:
 		for element in line:
 			if element in powerups:
 				count += 1
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return count
 
 def find_enemies(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
+
 	enemies = ["g", "E","y","Y","G","k","K","r"]
 	count = 0
 	for line in map_matrix:
 		for element in line:
 			if element in enemies:
 				count += 1
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return count
 
 def find_gaps(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
+
 	bottom_row = map_matrix[-1]
 	gaps = []
 	x = 0
@@ -59,9 +70,12 @@ def find_gaps(map_matrix):
 			gaps.append((x_2-x))
 			x = x_2
 		x += 1
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return gaps
 
 def find_cannons(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
+
 	count = 0
 	y = 0
 	y_len = len(map_matrix[0])
@@ -78,9 +92,12 @@ def find_cannons(map_matrix):
 			x += 1 
 		y += 1
 		count += asterisk + B
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return count
 
 def find_flowerpiranhas(map_matrix):
+	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
+
 	count = 0
 	y = 0
 	y_len = len(map_matrix[0])
@@ -92,4 +109,5 @@ def find_flowerpiranhas(map_matrix):
 				count += 1
 			x += 1 
 		y += 1
+	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return count

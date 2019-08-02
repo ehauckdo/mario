@@ -1,5 +1,7 @@
 import map_matrix, grammar
 import os
+import logging, inspect
+logging.basicConfig(level=logging.DEBUG)
 
 # read folder that contains section maps
 # associated with production rules
