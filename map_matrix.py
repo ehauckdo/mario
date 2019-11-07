@@ -19,6 +19,8 @@ def initialize_map():
 	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return matrix	
 
+# reads all maps/sections from a folder and return a dictionary
+# in the format of key -> filename, value -> map matrix
 def read_folder(folder="sections"):
 	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
 	import os
