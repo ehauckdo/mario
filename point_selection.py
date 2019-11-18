@@ -1,20 +1,16 @@
 
 def get_points(map_data, N=3, D=3):
 	
-	n_cols = map_data.n_cols
-	n_rows = map_data.n_rows
-	#print(n_cols, n_rows)
-
 	import random
-	r = random.randint(0, n_rows)
-	c = random.randint(0, n_cols)
+	r = random.randint(0, map_data.n_rows)
+	c = random.randint(0, map_data.n_cols)
 
 	# store tiles r, c indexes, and probabilities for each
 	pop = []
 	pop_d = []
 
-	for r in range(n_rows):
-		for c in range(n_cols):
+	for r in range(map_data.n_rows):
+		for c in range(map_data.n_cols):
 			if map_data.get(r, c) != "-":
 				pop.append((r,c))
 
