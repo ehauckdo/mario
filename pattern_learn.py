@@ -2,42 +2,18 @@
 import os
 import sys
 import optparse
-import math
 import logging, inspect
 import random
 
+from map import Map, Generated_Map
 from point_selection import get_points
-from substructure_selection import get_substructures, pretty_print_graph_map
+from substructure_selection import get_substructures
 from substructure_combine import find_substructures_combinations
+from map_generation import instantiate_base_map
 
 # set up logger
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="log", level=logging.DEBUG, filemode='w')
 logger = logging.getLogger(__name__)
-
-class Map:
-
-	def __init__(self):
-		self.map_data = []
-		self.n_rows = 16
-		self.n_cols = 1
-
-	def append(self, value):
-		self.map_data.append(value)
-		self.n_cols = math.ceil(len(self.map_data) / self.n_rows)
-
-	def get(self, x, y):
-		if x > self.n_rows or y > self.n_cols:
-			raise "Accessing invalid index"
-		index = self.n_rows * y + x
-		return self.map_data[index]
-
-	def pretty_print(self):
-		for i in range(self.n_rows):
-			row = ""
-			for j in range(self.n_cols):
-				tile = self.get(i, j)
-				row += tile
-			print(row)
 
 def parse_args(args):
 	usage = "usage: %prog [options]"
@@ -65,119 +41,112 @@ def read_map(path):
 
 	return map_struct
 
+
 def run(path_to_map):
 
-
-	# GENERATE A MAP-MATRIX STRUCTURE TO HOLD THE ORIGINAL MAP
+	# Generate a Map-Matrix structure to hold the original map
 	map_data = read_map(path_to_map)
 	logger.info("Selected Map File: {}".format(path_to_map))
 	logger.info("Rows: {}, Columns: {}".format(map_data.n_rows, map_data.n_cols))
-	map_data.pretty_print()
-	
-	# SELECT N POINTS FROM THE MAP, WITH D DISTANCE FROM EACH OTHER
-	N = 3
-	D = 3
-	selected_points = get_points(map_data, 3, 3)
-	logger.info("Selected points: {}".format(selected_points))
+	logger.info(map_data.pretty_print())
 
-	# SELECT SUBSTRUCTURES WITH D DISTANCE FROM CORE NODE PLUS 
-	# S DISTANCE IF NEIGHBOURS ARE OF THE SAME TYPE AS CURRENT 
+	# Step 1	
+	# Select N points from the map, with D distance from each other 
+	N = 30
+	#N = 2
 	D = 4
-	S = 2
-	# substructures, connecting_nodes = get_substructures(map_data, selected_points, D, S)
-	# logger.info("Selected substructures:")
-	# for c_id in substructures.keys():
-	# 	logger.info(substructures[c_id])
-	# logger.info("Connecting nodes:")
-	# for c_id in substructures.keys():
-	# 	for n in connecting_nodes[c_id]:
-	# 		print("{}: {}, {}".format(c_id, n, n.edges))
+	selected_points = get_points(map_data, N, D)
+	logger.info("Selected points ({}): {}".format(N, selected_points))
+
+	# Step 2
+	# Select substructures expanding from previously selected points
+	# Expansion will be done until D manhattan-distance from the core
+	# points. If tiles around the edges are the same as of the edges,
+	# this expansion can continue for more S manhattan-distance.
+	D = 3
+	S = 4
 	substructures = get_substructures(map_data, selected_points, D, S)
-
-	# RELATIVIZE ALL CORDINATES SO THAT THE SMALLEST X START AT 0
-	logger.info("Selected substructures:")
+	logger.info("Selected Substructures: ")
 	for s in substructures:
-		logger.info("Before relativization:")
-		logger.info(s)
+		logger.info("\n{}".format(s.pretty_print(True)))
+
+	# Relativize the node position of all structures, so that the 
+	# left-most node start at column 0
+	logger.info("Substructures after relativization:")
+	for s in substructures:
 		s.relativize_coordinates()
-		logger.info("After relativization:")
-		logger.info(s)
+		logger.info("\n{}".format(s.pretty_print()))
 
-	# #===== individual cluster log for debug ======
-	# logger.info("Substructures without normalized columns: ")
-	# for c_id in substructures.keys():
-	# 	print("Cluster {}".format(c_id))
-	# 	for n in substructures[c_id]:
-	# 		print("{}, {}".format(n, n.edges))
-	# 	print("Connecting nodes: ")
-	# 	for n in connecting_nodes[c_id]:
-	# 		print("{}, {}".format(n, n.edges))	
-	# 	break
+	# Step 3
+	# Instantiate starting and finishing substructures of the map
+	# and add them to the list of substructures for the next step
+	g_s, g_f = instantiate_base_map(len(substructures)+1)
+	#logger.info("g_s: \n{}, \ng_f: \n{}".format(g_s.pretty_print(), g_f.pretty_print()))
+	substructures.append(g_s)
+	substructures.append(g_f)
 
-	# return
-
-	# RELATIVIZE ALL CORDINATES SO THAT THE SMALLEST X START AT 0
-	# for c_id in substructures.keys():
-	# 	substructures[c_id] = relativize_coordinates(substructures[c_id])	
-	# logger.info("Substructures with normalized columns: ")
-	# for c_id in substructures.keys():
-	# 	logger.info(substructures[c_id])
-	# logger.info("Connecting nodes:")
-	# for c_id in substructures.keys():
-	# 	for n in connecting_nodes[c_id]:
-	# 		print("{}: {}, {}".format(c_id, n, n.edges))
-
-	# #===== individual cluster log for debug ======
-	# logger.info("Substructures with normalized columns: ")
-	# for c_id in substructures.keys():
-	# 	print("Cluster {}".format(c_id))
-	# 	for n in substructures[c_id]:
-	# 		print("{}, {}".format(n, n.edges))
-	# 	print("Connecting nodes: ")
-	# 	for n in connecting_nodes[c_id]:
-	# 		print("{}, {}".format(n, n.edges))
-	# 	break
-
-
-	# FIND POSSIBLE COMBINATIONS BETWEEN SUBSTRUCTURES
+	# Step 3
+	# Find possible combinations between all substructures 
 	find_substructures_combinations(substructures)
 	logger.info("Checking identified combinable substructures: ")
 	for s1 in substructures:
 		logger.info("Substructure {} can be combined with: ".format(s1.id))
-		for s2, n2 in s1.combinable:
-			logger.info("{}, {}".format(s2.id, n2))
+		for n in s1.connecting:
+			logger.info("From node {}: {}".format(n, n.edges[0].properties["combinable"]))
 
-	# logger.info("Combinations found: ")
-	# for c_id in connecting_nodes.keys():
-	# 	connecting_nodes_list = connecting_nodes[c_id]
-	# 	for connecting in connecting_nodes_list:
+	# remove starting and finishing structures from list, 
+	# we don't want to use them during combination process
+	substructures.remove(g_s)
+	substructures.remove(g_f)
 
-	# 		logger.info("Combinations for cluster {}, connection node {}:".format(c_id, connecting))
-	# 		for connector in connecting.connectors:
-	# 			logger.info("{}: {}".format(connector.cluster_id, connector))
+	import copy
+	generated_structure = copy.deepcopy(g_s)
+	logger.info("Initial structure generated! ")
+	logger.info(generated_structure.pretty_print())
 
-	# for n in connecting_nodes:
-		
-	# 	for c in n.connectors:
-	# 		logger.info("{}: {}".format(c.cluster_id, c))
+	available_substitutions = generated_structure.get_available_substitutions()
+	count_substitutions = 0
+	logger.info("Starting substitution process...")
+
+	while len(available_substitutions) > 0:
+
+		# TODO find a better way of selecting structures with
+		# more than 1 connecting node
+		while len(available_substitutions) > 0:
+			c1, s_id, c2 = random.choice(available_substitutions)
+			available_substitutions.remove((c1,s_id, c2))
+			for s in substructures:
+				if s.id == s_id:
+					break
+			if len(s.connecting) > 1 and generated_structure.collides(s, c1, c2):
+				logger.info("Found substructure: {}".format(s.id))
+				logger.info("Number of Connecting Nodes: {}".format(len(s.connecting)))
+				logger.info(s.pretty_print())
+				break
+
+		generated_structure.expand(s, c1, c2)
+
+		available_substitutions = generated_structure.get_available_substitutions()
+		logger.info("Available substitutions: {}".format(len(available_substitutions)))
+		logger.info("Count: {}".format(count_substitutions))
+		logger.info("\n{}".format(generated_structure.pretty_print()))
+
+		count_substitutions += 1
+
+		if count_substitutions >= 15:
+			for connecting in generated_structure.connecting:
+				for s_id, n2 in connecting.edges[0].properties["combinable"]:
+					if s_id == g_f.id:
+						generated_structure.expand(g_f, connecting, n2)
+						available_substitutions = []
+						break
+
+	generated_structure.save_as_map()
 
 
 if __name__ == '__main__':
 	opt, args = parse_args(sys.argv[1:])	
-	
+	sys.setrecursionlimit(10000) # required for some of the operations
 	run(opt.mapfile)
-	# logger.info("Selected Map File: {}".format(opt.mapfile))
-	# map_data = read_map(opt.mapfile)
-	# print(map_data.n_rows)
-	# print(map_data.n_cols)
-	
-	# map_data.pretty_print()
-	# selected_points = get_points(map_data, 3, 3)
-
-	# print("Selected points: {}".format(selected_points))
-
-	# substructures = get_substructures(map_data, selected_points)
-	# print(substructures)
-	
 
 
