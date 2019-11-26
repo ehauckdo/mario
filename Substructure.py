@@ -1,4 +1,6 @@
 #import substructure_manipulation
+import logging
+logger = logging.getLogger(__name__)
 
 class Node:
 
@@ -72,11 +74,6 @@ class Substructure:
 				# print("Deleting connecting node from s2")
 				s2_adjusted.connecting.remove(c)
 				break
-				
-
-		#s2_adjusted = substructure_manipulation.adjust_substructure_columns(s2_adjusted, adjust_column)
-
-		#s2_adjusted = substructure_manipulation.adjust_substructure_rows(s2_adjusted, adjust_row)
 
 		s2_adjusted.adjust_columns(adjust_column)
 		s2_adjusted.adjust_rows(adjust_row)
@@ -84,12 +81,33 @@ class Substructure:
 		return s2_adjusted
 
 	def collides(self, s2, c1, c2):
-
+		# logger.debug("Checking collision between structures: ")
 		map_matrix = [{} for i in range(16)]
-		s2_adjusted = self.adjust(s2, c1, c2)
+		import copy
+		s2_adjusted = copy.deepcopy(s2)
+		#s2_adjusted = self.adjust(s2, c1, c2)
+		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
+		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
 
-		for n in s2.nodes:
-			map_matrix[n.r][n.c] = n.tile
+		n1_direction = c1.edges[0].properties["direction"]
+		n2_direction = c2.edges[0].properties["direction"]
+
+		# logger.debug("Connecting (s1) n1: {}, direction: {}".format(c1, n1_direction))
+		# logger.debug("Connecting (s2) n2: {}, direction: {}".format(c2, n2_direction))
+
+		adjust_column = (c1.c + (horizontal[n1_direction])) - c2.c
+		adjust_row = (c1.r + (vertical[n2_direction])) - c2.r
+
+		s2_adjusted.adjust_columns(adjust_column)
+		s2_adjusted.adjust_rows(adjust_row)
+
+		for n in s2_adjusted.nodes:
+			#logger.debug(n)
+			try:
+				map_matrix[n.r][n.c] = n.tile
+			except:
+				# out of bounds, we can ignore
+				pass
 
 		for n in self.nodes:
 			try:
@@ -97,6 +115,7 @@ class Substructure:
 					return True
 			except:
 				pass
+
 		return False
 
 	def get_available_substitutions(self):

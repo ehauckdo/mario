@@ -1,5 +1,6 @@
 import logging
 import copy
+from reachability import is_reachable
 logger = logging.getLogger(__name__)
 
 
@@ -25,17 +26,11 @@ def do_overlap(s1, s2):
 				return True
 	return False
 
-# TODO: calculate reachability somehow
-def is_reachable(s1, s2):
-	return True
-
-
 def are_combinable(s1, s2, n1, n2, d1, d2):
 	logger.debug("Checking combinability of {} (id{}) and {} (id{})".format(n1, s1.id, n2, s2.id))
 
 	logger.debug("Before adjustment: ")
 	logger.debug(s2.nodes+s2.connecting)
-
 
 	horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
 	vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
@@ -43,11 +38,8 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
 	adjust_col = (n1.c + (horizontal[d1])) - n2.c
 	adjust_row = (n1.r + (vertical[d1])) - n2.r
 
-	import copy
 	s2_adjusted = copy.deepcopy(s2)
 
-	#s2_adjusted = substructure_manipulation.adjust_substructure_columns(s2_adjusted,adjust_col)
-	#s2_adjusted = substructure_manipulation.adjust_substructure_rows(s2_adjusted, adjust_row)
 	s2_adjusted.adjust_columns(adjust_col)
 	s2_adjusted.adjust_rows(adjust_row)
 
@@ -89,26 +81,27 @@ def find_substructures_combinations(substructures):
 			# again and search for a connecting node n2 that has opposite
 			# direction
 			for s2 in substructures:
-			#for index2 in range(index1+1, len(substructures)):
-			#	s2 = substructures[index2]
 				if s1.id == s2.id: continue
 
 				for n2 in s2.connecting:
 					n2_direction = n2.edges[0].properties["direction"]
 
-					if n2_direction == opposite and n1.r == n2.r:
-						logger.debug("---Opposing Node: {}, Direction: {}".format(n2, n2_direction))
+					# second condition ensures that both substructures
+					# are connecting at the same height/
+					if n2_direction == opposite:
+						if n2_direction == "d" or n1.r == n2.r:
+							logger.debug("---Opposing Node: {}, Direction: {}".format(n2, n2_direction))
 
-						combinable = are_combinable(s1, s2, n1, n2, direction, opposite)
+							combinable = are_combinable(s1, s2, n1, n2, direction, opposite)
 
-						if combinable:
-							logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
-							n1.edges[0].properties["combinable"].append((s2.id, n2))
-							n2.edges[0].properties["combinable"].append((s1.id, n1))
-							s1.combinable.append((s2,n2))
-							s2.combinable.append((s1,n1))
-						else:
-							logger.debug("--- Not combinable")
+							if combinable:
+								logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
+								n1.edges[0].properties["combinable"].append((s2.id, n2))
+								n2.edges[0].properties["combinable"].append((s1.id, n1))
+								s1.combinable.append((s2,n2))
+								s2.combinable.append((s1,n1))
+							else:
+								logger.debug("--- Not combinable")
 
 			logger.debug("--Finish: Processing connecting node {}".format(n1))
 		logger.debug("-Finish: connecting substructures in {}".format(s1.id))

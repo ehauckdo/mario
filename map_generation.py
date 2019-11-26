@@ -13,7 +13,6 @@ def instantiate_base_map(id_substructures):
 	g_s.insert_node(mario)
 
 	connecting = Node(15, 3, "*", g_s.id, 0, 0, "Connecting")
-	#connecting.id =  g_s.id
 	connecting.add_edge(connecting, {"direction":"r", "combinable":[]})
 	g_s.insert_node(connecting)
 

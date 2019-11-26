@@ -12,7 +12,7 @@ from substructure_combine import find_substructures_combinations
 from map_generation import instantiate_base_map
 
 # set up logger
-logging.basicConfig(filename="log", level=logging.DEBUG, filemode='w')
+logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
 logger = logging.getLogger(__name__)
 
 def parse_args(args):
@@ -63,8 +63,8 @@ def run(path_to_map):
 	# Expansion will be done until D manhattan-distance from the core
 	# points. If tiles around the edges are the same as of the edges,
 	# this expansion can continue for more S manhattan-distance.
-	D = 3
-	S = 4
+	D = 4
+	S = 3
 	substructures = get_substructures(map_data, selected_points, D, S)
 	logger.info("Selected Substructures: ")
 	for s in substructures:
@@ -112,17 +112,21 @@ def run(path_to_map):
 
 		# TODO find a better way of selecting structures with
 		# more than 1 connecting node
+		selected = False
 		while len(available_substitutions) > 0:
 			c1, s_id, c2 = random.choice(available_substitutions)
 			available_substitutions.remove((c1,s_id, c2))
 			for s in substructures:
 				if s.id == s_id:
 					break
-			if len(s.connecting) > 1 and generated_structure.collides(s, c1, c2):
+			if len(s.connecting) > 1 and generated_structure.collides(s, c1, c2) == False:
 				logger.info("Found substructure: {}".format(s.id))
 				logger.info("Number of Connecting Nodes: {}".format(len(s.connecting)))
 				logger.info(s.pretty_print())
+				selected = True
 				break
+
+		if selected == False: continue
 
 		generated_structure.expand(s, c1, c2)
 
@@ -133,7 +137,7 @@ def run(path_to_map):
 
 		count_substitutions += 1
 
-		if count_substitutions >= 15:
+		if count_substitutions >= 30:
 			for connecting in generated_structure.connecting:
 				for s_id, n2 in connecting.edges[0].properties["combinable"]:
 					if s_id == g_f.id:
