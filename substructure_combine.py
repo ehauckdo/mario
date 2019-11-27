@@ -89,7 +89,7 @@ def find_substructures_combinations(substructures):
 					# second condition ensures that both substructures
 					# are connecting at the same height/
 					if n2_direction == opposite:
-						if n2_direction == "d" or n1.r == n2.r:
+						#if n2_direction == "d" or n1.r == n2.r:
 							logger.debug("---Opposing Node: {}, Direction: {}".format(n2, n2_direction))
 
 							combinable = are_combinable(s1, s2, n1, n2, direction, opposite)

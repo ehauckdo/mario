@@ -5,6 +5,7 @@ def instantiate_base_map(id_substructures):
 	
 	for c in range(3):
 		platform = Node(15, c, "X")
+		platform.type = "Solid"
 		platform.cluster_id = g_s.id
 		g_s.insert_node(platform)
 
@@ -20,19 +21,13 @@ def instantiate_base_map(id_substructures):
 
 	g_f = Substructure(id_substructures)
 
-	platform = Node(15, 1, "X")
-	platform.cluster_id = g_f.id
-	g_f.insert_node(platform)
+	for c  in range(2,4):
+		platform = Node(11, c, "X")
+		platform.type = "Solid"
+		platform.cluster_id = g_f.id
+		g_f.insert_node(platform)
 
-	platform = Node(15, 2, "X")
-	platform.cluster_id = g_f.id
-	g_f.insert_node(platform)
-
-	platform = Node(15, 3, "X")
-	platform.cluster_id = g_f.id
-	g_f.insert_node(platform)
-
-	finish = Node(14, 2, "F")
+	finish = Node(10, 2, "F")
 	finish.cluster_id = g_f.id
 	g_f.insert_node(finish)
 

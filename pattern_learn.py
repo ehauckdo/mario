@@ -44,6 +44,23 @@ def read_map(path):
 
 def run(path_to_map):
 
+
+	################ DEBUG FOR REACHABILITY #################
+	# substructures = []
+	# g_s, g_f = instantiate_base_map(len(substructures)+1)
+	# #logger.info("g_s: \n{}, \ng_f: \n{}".format(g_s.pretty_print(), g_f.pretty_print()))
+	# substructures.append(g_s)
+	# substructures.append(g_f)
+
+	# find_substructures_combinations(substructures)
+	# logger.info("Checking identified combinable substructures: ")
+	# for s1 in substructures:
+	# 	logger.info("Substructure {} can be combined with: ".format(s1.id))
+	# 	for n in s1.connecting:
+	# 		logger.info("From node {}: {}".format(n, n.edges[0].properties["combinable"]))
+	# return
+	############################################
+
 	# Generate a Map-Matrix structure to hold the original map
 	map_data = read_map(path_to_map)
 	logger.info("Selected Map File: {}".format(path_to_map))
