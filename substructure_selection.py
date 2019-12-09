@@ -2,22 +2,29 @@ import logging
 from Substructure import Substructure, Node
 logger = logging.getLogger(__name__)
 
-def pretty_print_graph_map(graph_map):
+def pretty_print_graph_map(graph_map, tiles=False):
+
+	import string
+	symbols = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"}
+	size = len(string.ascii_lowercase)
+
+	if tiles:
+		row = ""
 		for g in graph_map:
-			row = ""
 			for v in g:
 				if v == None: row += " "
 				else: row += "{}".format(v.tile)
-			print(row)
-
+			row += "\n"
+		logger.info(row)
+	
+	else:
+		row = ""
 		for g in graph_map:
-			row = ""
 			for v in g:
 				if v == None: row += " "
-				else: row += "{}".format(v.cluster_id)
-			print(row)
-
-
+				else: row += "{}".format(string.ascii_lowercase[v.cluster_id%size])
+			row += "\n"
+		logger.info(row)
 
 def append_adjacent_edges(graph_map):
 

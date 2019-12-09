@@ -116,18 +116,21 @@ def getDistances(s1, s2):
 
 	s1_solids = []
 	s2_solids = []
+	s2_nonsolids = []
 
 	for n in s1.nodes: 
 		if n.type == "Solid": s1_solids.append(n)
 	for n in s2.nodes: 
 		if n.type == "Solid": s2_solids.append(n)
+		elif n.type == "Non-Solid": s2_nonsolids.append(n)
+
 
 	logger.info("s1 solids: {}".format(s1_solids))
 	logger.info("s2 solids: {}".format(s2_solids))
 
 	distances = []
 	for n1 in s1_solids:
-		for n2 in s2_solids:
+		for n2 in s2_solids+s2_nonsolids:
 			d = dist(n1, n2)
 			distances.append((d, n1, n2))
 
@@ -135,24 +138,6 @@ def getDistances(s1, s2):
 
 	return distances
 
-def inside_triangle(n1, n2, dist):
-	def area(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y):
-		return abs((p1_x*(p2_y-p3_y) + p2_x*(p3_y-p1_y) 
-										+ p3_x*(p1_y-p2_y))/2.0)
-	p1_x = n1.c - dist 
-	p1_y = n1.r
-	p2_x = n1.c + dist
-	p2_y = n1.r
-	p3_x = n1.c
-	p3_y = n1.r - dist
-
-	A = area(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
-	A1 = area(n2.c, n2.r, p2_x, p2_y, p3_x, p3_y)
-	A2 = area(p1_x, p1_y, n2.c, n2.r, p3_x, p3_y)
-	A3 = area(p1_x, p1_y, p2_x, p2_y, n2.c, n2.r)
-	return abs(A1 + A2 + A3 - A) <= 0.001
-
-	return True
 
 def is_reachable(s1, s2, dist=4.5):
 	logger.info("Calculating Reachability...")
