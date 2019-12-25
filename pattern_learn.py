@@ -116,6 +116,13 @@ def run(path_to_map, n_maps=1):
 	substructures.remove(g_s)
 	substructures.remove(g_f)
 
+	output_file = open("output_substructures_stats.txt", "w")
+	for s in substructures:
+		s.relativize_coordinates()
+		#logger.info("\n{}".format(s.pretty_print()))
+		print("{}, {}, {}".format(s.id, len(s.connecting), len(s.get_available_substitutions())), file=output_file)
+	output_file.close()
+
 	for i in range(n_maps):
 		
 		output_file = open("output_{}_stats.txt".format(i), "w")
@@ -149,8 +156,9 @@ def run(path_to_map, n_maps=1):
 
 				sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
 				sim_available_substitutions = sim_structure.get_available_substitutions()
-				if len(sim_available_substitutions) <= 0 or collides:
-					logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
+				if collides: #or len(sim_available_substitutions) <= 0:
+					# logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
+					logger.info("Simulated structure collides, trying next...")
 					continue
 				else:
 					
@@ -191,6 +199,6 @@ def run(path_to_map, n_maps=1):
 if __name__ == '__main__':
 	opt, args = parse_args(sys.argv[1:])	
 	sys.setrecursionlimit(10000) # required for some of the operations
-	run(opt.mapfile, 10)
+	run(opt.mapfile, 100)
 
 
