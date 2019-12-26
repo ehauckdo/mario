@@ -4,7 +4,7 @@ import logging
 from generator import generator
 
 # set up logger
-logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
+logging.basicConfig(filename="logs/log", level=logging.INFO, filemode='w')
 
 def parse_args(args):
 	usage = "usage: %prog [options]"
