@@ -99,7 +99,7 @@ def run(path_to_map, n_maps, n, d, s):
 	substructures.remove(g_s)
 	substructures.remove(g_f)
 
-	output_file = open("output_substructures_stats.txt", "w")
+	output_file = open("output/output_substructures_stats.txt", "w")
 	for s in substructures:
 		s.relativize_coordinates()
 		#logger.info("\n{}".format(s.pretty_print()))
@@ -108,7 +108,7 @@ def run(path_to_map, n_maps, n, d, s):
 
 	for i in range(n_maps):
 
-		output_file = open("output_{}_stats.txt".format(i), "w")
+		output_file = open("output/output_{}_stats.txt".format(i), "w")
 		substructures_used = {}
 		for s in substructures:
 			substructures_used[s.id] = 0
