@@ -1,6 +1,7 @@
 #import substructure_manipulation
 import logging
 import copy
+from .map import Generated_Map
 logger = logging.getLogger(__name__)
 
 class Node:
@@ -142,7 +143,7 @@ class Substructure:
 
 		self.nodes.extend(s2_adjusted.nodes)
 		self.connecting.extend(s2_adjusted.connecting)
-		
+
 		print("Updated Structure:")
 		print(self)
 
@@ -230,7 +231,7 @@ class Substructure:
 		for n in self.nodes+self.connecting:
 			n.r += adjust
 
-	
+
 
 	def relativize_coordinates(self):
 
@@ -242,7 +243,7 @@ class Substructure:
 		for node in self.nodes+self.connecting:
 			if node.c < smallest_c:
 				smallest_c = node.c
-	
+
 		for node in self.nodes+self.connecting:
 			node.c = node.c - smallest_c
 
@@ -251,12 +252,12 @@ class Substructure:
 
 	def pretty_print(self, symbols=True):
 		full_string = "#"
-		from map import Generated_Map
+
 		generated = Generated_Map()
 
 		for n in self.nodes:
 			# print("Inserting node: {},{}".format(n.r, n.c))
-			
+
 			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
 		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
 		for n in self.connecting:

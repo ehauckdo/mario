@@ -5,11 +5,11 @@ import optparse
 import logging, inspect
 import random
 
-from map import Map, Generated_Map
-from point_selection import get_points
-from substructure_selection import get_substructures
-from substructure_combine import find_substructures_combinations
-from map_generation import instantiate_base_map
+from .map import Map, Generated_Map
+from .point_selection import get_points
+from .substructure_selection import get_substructures
+from .substructure_combine import find_substructures_combinations
+from .map_generation import instantiate_base_map
 
 # set up logger
 logging.basicConfig(filename="log", level=logging.INFO, filemode='w')

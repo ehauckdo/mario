@@ -1,8 +1,8 @@
-from substructure_selection import Substructure, Node
+from .substructure import Substructure, Node
 
 def instantiate_base_map(id_substructures):
 	g_s = Substructure(id_substructures)
-	
+
 	for c in range(3):
 		platform = Node(15, c, "X")
 		platform.type = "Solid"

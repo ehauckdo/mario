@@ -1,5 +1,5 @@
 import logging
-from Substructure import Substructure, Node
+from .substructure import Substructure, Node
 logger = logging.getLogger(__name__)
 
 def pretty_print_graph_map(graph_map, tiles=False):
@@ -16,7 +16,7 @@ def pretty_print_graph_map(graph_map, tiles=False):
 				else: row += "{}".format(v.tile)
 			row += "\n"
 		logger.info(row)
-	
+
 	else:
 		row = ""
 		for g in graph_map:
@@ -33,7 +33,7 @@ def append_adjacent_edges(graph_map):
 			n = graph_map[r][c]
 
 			directions = [("r",r,c+1),("d",r+1, c),("l",r, c-1),("u",r-1, c)]
-			
+
 			for direction, neigh_r, neigh_c in directions:
 				try:
 					if graph_map[neigh_r][neigh_c] != None:
@@ -69,7 +69,7 @@ def get_substructures(map_data, points, D=5, S=2):
 	all_expanded_nodes = []
 	cluster_collisions = {}
 	connecting_nodes = []
-	
+
 	cluster_id = 1
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
@@ -104,7 +104,7 @@ def get_substructures(map_data, points, D=5, S=2):
 					if node.d+node.s >= D+S: continue
 					elif node.tile == map_data.get(row, col) and node.tile != "-":
 							s += 1
-					else: continue					
+					else: continue
 
 				if graph_map[row][col] == None:
 					tile = map_data.get(row, col)
@@ -159,7 +159,7 @@ def get_substructures(map_data, points, D=5, S=2):
 
 		current = nodes.pop(0)
 		expand(current)
-		
+
 	pretty_print_graph_map(graph_map)
 
 	logger.debug("Collisions during 1st expansion step:")
@@ -177,5 +177,5 @@ def get_substructures(map_data, points, D=5, S=2):
 	# 	logger.info(s)
 
 	#substructures = get_substructures_by_cluster_id(all_expanded_nodes)
-	
+
 	return substructures

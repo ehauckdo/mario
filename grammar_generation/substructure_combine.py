@@ -1,6 +1,6 @@
 import logging
 import copy
-from reachability import is_reachable
+from .reachability import is_reachable
 logger = logging.getLogger(__name__)
 
 
@@ -8,7 +8,7 @@ def group_by_direction(connecting_nodes_list):
 	directions = {"r":[], "l":[], "u":[], "d":[]}
 	for c_id in connecting_nodes_list.keys():
 		print("Cluster {}".format(c_id))
-		connecting_nodes = connecting_nodes_list[c_id] 
+		connecting_nodes = connecting_nodes_list[c_id]
 		for n in connecting_nodes:
 			edge = n.edges[0]
 			d = edge.properties["direction"]
@@ -67,7 +67,7 @@ def find_substructures_combinations(substructures):
 	#for index1 in range(len(substructures)-1):
 		#s1 = substructures[index1]
 		logger.debug("-Start: connecting substructures in {}".format(s1.id))
-	
+
 		for n1 in s1.connecting:
 			direction = n1.edges[0].properties["direction"]
 			logger.debug("--Start: Processing connecting node {}, direction: {}".format(n1, direction))
@@ -76,7 +76,7 @@ def find_substructures_combinations(substructures):
 				logger.debug("--Finish: Processing connecting node {}".format(n1))
 				continue
 			opposite = opposite_directions[direction]
-			
+
 			# for a certain connecting node n1, go through all substructures
 			# again and search for a connecting node n2 that has opposite
 			# direction
