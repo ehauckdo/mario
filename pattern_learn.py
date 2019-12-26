@@ -17,9 +17,13 @@ logger = logging.getLogger(__name__)
 
 def parse_args(args):
 	usage = "usage: %prog [options]"
-	parser = optparse.OptionParser(usage=usage) 
+	parser = optparse.OptionParser(usage=usage)
 
 	parser.add_option('-m', action="store", type="string", dest="mapfile",help="Path/name of the map file", default="maps/lvl-1.txt")
+	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of maps to be generated", default=1)
+	parser.add_option('-n', action="store", type="int", dest="n",help="Number of structures to be selected", default=30)
+	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=3)
+	parser.add_option('-s', action="store", type="int", dest="s",help="Extended radius of structures based on similarity", default=8)
 
 	(opt, args) = parser.parse_args()
 	return opt, args
@@ -42,7 +46,7 @@ def read_map(path):
 	return map_struct
 
 
-def run(path_to_map, n_maps=1):
+def run(path_to_map, n_maps, n, d, s):
 
 
 	################ DEBUG FOR REACHABILITY #################
@@ -67,12 +71,12 @@ def run(path_to_map, n_maps=1):
 	logger.info("Rows: {}, Columns: {}".format(map_data.n_rows, map_data.n_cols))
 	logger.info(map_data.pretty_print())
 
-	# Step 1	
-	# Select N points from the map, with D distance from each other 
+	# Step 1
+	# Select N points from the map, with D distance from each other
 	N = 30
 	#N = 2
-	D = 4
-	selected_points = get_points(map_data, N, D)
+	min_dist = 4
+	selected_points = get_points(map_data, n, min_dist)
 	logger.info("Selected points ({}): {}".format(N, selected_points))
 
 	# Step 2
@@ -82,12 +86,12 @@ def run(path_to_map, n_maps=1):
 	# this expansion can continue for more S manhattan-distance.
 	D = 3
 	S = 8
-	substructures = get_substructures(map_data, selected_points, D, S)
+	substructures = get_substructures(map_data, selected_points, d, s)
 	logger.info("Selected Substructures: ")
 	for s in substructures:
 		logger.info("\n{}".format(s.pretty_print(True)))
 
-	# Relativize the node position of all structures, so that the 
+	# Relativize the node position of all structures, so that the
 	# left-most node start at column 0
 	logger.info("Substructures after relativization:")
 	for s in substructures:
@@ -103,7 +107,7 @@ def run(path_to_map, n_maps=1):
 	substructures.append(g_f)
 
 	# Step 3
-	# Find possible combinations between all substructures 
+	# Find possible combinations between all substructures
 	find_substructures_combinations(substructures)
 	logger.info("Checking identified combinable substructures: ")
 	for s1 in substructures:
@@ -111,7 +115,7 @@ def run(path_to_map, n_maps=1):
 		for n in s1.connecting:
 			logger.info("From node {}: {}".format(n, n.edges[0].properties["combinable"]))
 
-	# remove starting and finishing structures from list, 
+	# remove starting and finishing structures from list,
 	# we don't want to use them during combination process
 	substructures.remove(g_s)
 	substructures.remove(g_f)
@@ -124,7 +128,7 @@ def run(path_to_map, n_maps=1):
 	output_file.close()
 
 	for i in range(n_maps):
-		
+
 		output_file = open("output_{}_stats.txt".format(i), "w")
 		substructures_used = {}
 		for s in substructures:
@@ -161,7 +165,7 @@ def run(path_to_map, n_maps=1):
 					logger.info("Simulated structure collides, trying next...")
 					continue
 				else:
-					
+
 					generated_structure = sim_structure
 					selected = True
 					substructures_used[s_id] += 1
@@ -169,7 +173,7 @@ def run(path_to_map, n_maps=1):
 
 
 			if selected == False: continue
-			
+
 			logger.info("Selected substructure: \n{}".format(s.pretty_print()))
 
 			available_substitutions = sim_available_substitutions
@@ -190,15 +194,14 @@ def run(path_to_map, n_maps=1):
 
 		for s_id, value in sorted(substructures_used.items()):
 			print("{}: {}".format(s_id, value), file=output_file)
-	
+
 		output_file.close()
 
 		generated_structure.save_as_map("output_{}.txt".format(i))
 
 
 if __name__ == '__main__':
-	opt, args = parse_args(sys.argv[1:])	
+	opt, args = parse_args(sys.argv[1:])
 	sys.setrecursionlimit(10000) # required for some of the operations
-	run(opt.mapfile, 100)
-
-
+	print(opt.n, opt.d, opt.s)
+	run(opt.mapfile, opt.output_number, opt.n, opt.d, opt.s)
