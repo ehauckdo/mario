@@ -73,19 +73,15 @@ def run(path_to_map, n_maps, n, d, s):
 
 	# Step 1
 	# Select N points from the map, with D distance from each other
-	N = 30
-	#N = 2
 	min_dist = 4
 	selected_points = get_points(map_data, n, min_dist)
-	logger.info("Selected points ({}): {}".format(N, selected_points))
+	logger.info("Selected points ({}): {}".format(n, selected_points))
 
 	# Step 2
 	# Select substructures expanding from previously selected points
 	# Expansion will be done until D manhattan-distance from the core
 	# points. If tiles around the edges are the same as of the edges,
 	# this expansion can continue for more S manhattan-distance.
-	D = 3
-	S = 8
 	substructures = get_substructures(map_data, selected_points, d, s)
 	logger.info("Selected Substructures: ")
 	for s in substructures:
@@ -197,11 +193,15 @@ def run(path_to_map, n_maps, n, d, s):
 
 		output_file.close()
 
-		generated_structure.save_as_map("output_{}.txt".format(i))
+		generated_structure.save_as_map("output/output_{}.txt".format(i))
 
 
 if __name__ == '__main__':
 	opt, args = parse_args(sys.argv[1:])
 	sys.setrecursionlimit(10000) # required for some of the operations
-	print(opt.n, opt.d, opt.s)
+
+	output_directory = "output/"
+	if not os.path.exists(output_directory):
+		os.makedirs(output_directory)
+
 	run(opt.mapfile, opt.output_number, opt.n, opt.d, opt.s)
