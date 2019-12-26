@@ -11,7 +11,6 @@ from .substructure_selection import get_substructures
 from .substructure_combine import find_substructures_combinations
 from .level_generation import instantiate_base_level
 
-
 logger = logging.getLogger(__name__)
 
 def read_level(path):
@@ -31,9 +30,7 @@ def read_level(path):
 
 	return map_struct
 
-
 def run(path_to_map, n_maps, n, d, s):
-
 
 	################ DEBUG FOR REACHABILITY #################
 	# substructures = []

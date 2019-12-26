@@ -1,7 +1,7 @@
 import sys, os
 import optparse
 import logging
-from grammar_generation import pattern_learn
+from generator import generator
 
 # set up logger
 logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
@@ -28,4 +28,4 @@ if __name__ == '__main__':
 	if not os.path.exists(output_directory):
 		os.makedirs(output_directory)
 
-	pattern_learn.run(opt.mapfile, opt.output_number, opt.n, opt.d, opt.s)
+	generator.run(opt.mapfile, opt.output_number, opt.n, opt.d, opt.s)
