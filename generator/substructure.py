@@ -130,22 +130,12 @@ class Substructure:
 		return False
 
 	def expand(self, s2, c1, c2):
-		print("Connecting")
-		print(self)
-		print("With")
-		print(s2)
-		print("By using connecting nodes {}  and  {}".format(c1, c2))
+		logger.info("Connecting structure {} with {} by using connecting nodes {} and {}".format(self.id, s2.id, c1, c2))
 
 		s2_adjusted = self.adjust(s2, c1, c2)
 
-		print("Adjusted s2: ")
-		print(s2_adjusted)
-
 		self.nodes.extend(s2_adjusted.nodes)
 		self.connecting.extend(s2_adjusted.connecting)
-
-		print("Updated Structure:")
-		print(self)
 
 		return
 
