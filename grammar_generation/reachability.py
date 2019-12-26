@@ -39,9 +39,9 @@ logger = logging.getLogger(__name__)
 def computeReachability(n1, n2):
 
 	def inside_triangle(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y, x, y):
-		
+
 		def area(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y):
-			return abs((p1_x*(p2_y-p3_y) + p2_x*(p3_y-p1_y) 
+			return abs((p1_x*(p2_y-p3_y) + p2_x*(p3_y-p1_y)
 										+ p3_x*(p1_y-p2_y))/2.0)
 
 		A = area(p1_x, p1_y, p2_x, p2_y, p3_x, p3_y)
@@ -60,7 +60,7 @@ def computeReachability(n1, n2):
 	v_dist = 4
 
 	rect_c_min = 0 if n1.c - h_dist < 0 else n1.c - h_dist
-	rect_c_max = n1.c + h_dist  
+	rect_c_max = n1.c + h_dist
 	rect_r_min = 0 if n1.r - v_dist < 0 else n1.r - v_dist
 	rect_r_max = 15 if n1.r + v_dist > 15 else n1.r + v_dist
 
@@ -75,7 +75,7 @@ def computeReachability(n1, n2):
 
 	# loose approximation
 	t1_p3_c = rect_c_min - (15-rect_r_min)/2
-	if t1_p3_c < 0: t1_p3_c = 0 
+	if t1_p3_c < 0: t1_p3_c = 0
 	t1_p3_r = 15
 
 	logger.debug("t1 p1: ({},{}), p2: ({},{}), p3: ({},{}),".format(t1_p1_r,t1_p1_c,  t1_p2_r, t1_p2_c, t1_p3_r, t1_p3_c))
@@ -118,9 +118,9 @@ def getDistances(s1, s2):
 	s2_solids = []
 	s2_nonsolids = []
 
-	for n in s1.nodes: 
+	for n in s1.nodes:
 		if n.type == "Solid": s1_solids.append(n)
-	for n in s2.nodes: 
+	for n in s2.nodes:
 		if n.type == "Solid": s2_solids.append(n)
 		elif n.type == "Non-Solid": s2_nonsolids.append(n)
 
@@ -155,4 +155,3 @@ def is_reachable(s1, s2, dist=4.5):
 		else:
 			logger.info("Not reachable!")
 	return False
-

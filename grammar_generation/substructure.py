@@ -1,7 +1,7 @@
 #import substructure_manipulation
 import logging
 import copy
-from .map import Generated_Map
+from .level import Level
 logger = logging.getLogger(__name__)
 
 class Node:
@@ -253,7 +253,7 @@ class Substructure:
 	def pretty_print(self, symbols=True):
 		full_string = "#"
 
-		generated = Generated_Map()
+		generated = Level()
 
 		for n in self.nodes:
 			# print("Inserting node: {},{}".format(n.r, n.c))
@@ -265,12 +265,11 @@ class Substructure:
 
 		return generated.pretty_print()
 
-	def save_as_map(self, map_filename="output.txt"):
-		from map import Generated_Map
-		generated = Generated_Map()
+	def save_as_level(self, level_filename="output.txt"):
+		generated = Level()
 
 		for n in self.nodes:
 			# print("Inserting node: {},{}".format(n.r, n.c))
 			generated.set(n.r, n.c, n.tile)
 
-		generated.save_map(map_filename)
+		generated.save_level(level_filename)

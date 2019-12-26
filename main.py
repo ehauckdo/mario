@@ -1,6 +1,10 @@
 import sys, os
 import optparse
+import logging
 from grammar_generation import pattern_learn
+
+# set up logger
+logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
 
 def parse_args(args):
 	usage = "usage: %prog [options]"
@@ -19,6 +23,7 @@ if __name__ == '__main__':
 	opt, args = parse_args(sys.argv[1:])
 	sys.setrecursionlimit(10000) # required for some of the operations
 
+    # make sure the output directory exists, otherwise create it
 	output_directory = "output/"
 	if not os.path.exists(output_directory):
 		os.makedirs(output_directory)

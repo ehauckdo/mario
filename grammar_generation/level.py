@@ -1,34 +1,6 @@
 import math
 
-class Map:
-
-	def __init__(self):
-		self.map_data = []
-		self.n_rows = 16
-		self.n_cols = 1
-
-	def append(self, value):
-		self.map_data.append(value)
-		self.n_cols = math.ceil(len(self.map_data) / self.n_rows)
-
-	def get(self, x, y):
-		if x > self.n_rows or y > self.n_cols:
-			raise "Accessing invalid index"
-		index = self.n_rows * y + x
-		return self.map_data[index]
-
-	def pretty_print(self):
-		full_string = ""
-		for i in range(self.n_rows):
-			row = ""
-			for j in range(self.n_cols):
-				tile = self.get(i, j)
-				row += tile
-			full_string += row+"\n"
-			#print(row)
-		return full_string
-
-class Generated_Map:
+class Level:
 
 	def __init__(self):
 		self.map_data = []
@@ -84,14 +56,14 @@ class Generated_Map:
 			# print(row)
 		return full_string
 
-	def save_map(self, map_filename="output.txt"):
-		output_file = open(map_filename, "w")
-		
+	def save_level(self, level_filename="output.txt"):
+		output_file = open(level_filename, "w")
+
 		for r in range(self.n_rows):
 			string = ""
 			for c in range(self.n_cols):
 				tile = self.get(r, c)
 				string += str(tile)
 			print(string, sep='', file=output_file)
-		print("Map saved...!")
+		print("Level saved...!")
 		output_file.close()

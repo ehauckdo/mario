@@ -3,7 +3,6 @@ import copy
 from .reachability import is_reachable
 logger = logging.getLogger(__name__)
 
-
 def group_by_direction(connecting_nodes_list):
 	directions = {"r":[], "l":[], "u":[], "d":[]}
 	for c_id in connecting_nodes_list.keys():

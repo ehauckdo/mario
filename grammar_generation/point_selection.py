@@ -1,6 +1,5 @@
-
 def get_points(map_data, N=3, D=3):
-	
+
 	import random
 	r = random.randint(0, map_data.n_rows)
 	c = random.randint(0, map_data.n_cols)
@@ -25,16 +24,16 @@ def get_points(map_data, N=3, D=3):
 		update_chances(pop, pop_d, r, c+1, D-1)
 		update_chances(pop, pop_d, r-1, c, D-1)
 		update_chances(pop, pop_d, r, c-1, D-1)
-		
+
 		for i in reversed(range(len(pop))):
 			if pop[i] == (r, c):
 				#print("Removing {},{} from list".format(r,c))
-				pop_d.remove(pop_d[i]) 
+				pop_d.remove(pop_d[i])
 				pop.remove(pop[i])
 
 	selected_points = []
 	import numpy as np
-	while len(selected_points) < N and len(pop_d) > 0: 
+	while len(selected_points) < N and len(pop_d) > 0:
 		index = np.random.choice(len(pop_d), 1, p=pop_d)[0]
 		r, c = pop[index]
 		#print("Updating R, C {},{}".format(r,c))
@@ -42,7 +41,7 @@ def get_points(map_data, N=3, D=3):
 		for i in range(len(pop)):
 			pop_d[i] = 1/len(pop)
 		selected_points.append((r,c))
-		
+
 	# assert statement to check if points indeed D distance apart
 	def get_manhattan(p1,p2):
 		return abs(p1[0]-p2[0])+abs(p1[1]-p2[1])

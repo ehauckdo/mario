@@ -1,6 +1,6 @@
 from .substructure import Substructure, Node
 
-def instantiate_base_map(id_substructures):
+def instantiate_base_level(id_substructures):
 	g_s = Substructure(id_substructures)
 
 	for c in range(3):

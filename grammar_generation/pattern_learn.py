@@ -5,30 +5,16 @@ import optparse
 import logging, inspect
 import random
 
-from .map import Map, Generated_Map
+from .level import Level
 from .point_selection import get_points
 from .substructure_selection import get_substructures
 from .substructure_combine import find_substructures_combinations
-from .map_generation import instantiate_base_map
+from .level_generation import instantiate_base_level
 
-# set up logger
-logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
+
 logger = logging.getLogger(__name__)
 
-def parse_args(args):
-	usage = "usage: %prog [options]"
-	parser = optparse.OptionParser(usage=usage)
-
-	parser.add_option('-m', action="store", type="string", dest="mapfile",help="Path/name of the map file", default="maps/lvl-1.txt")
-	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of maps to be generated", default=1)
-	parser.add_option('-n', action="store", type="int", dest="n",help="Number of structures to be selected", default=30)
-	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=3)
-	parser.add_option('-s', action="store", type="int", dest="s",help="Extended radius of structures based on similarity", default=8)
-
-	(opt, args) = parser.parse_args()
-	return opt, args
-
-def read_map(path):
+def read_level(path):
 	# read map as rows x columns
 	map_data = []
 	input_file = open(path, "r")
@@ -38,7 +24,7 @@ def read_map(path):
 			map_data[-1].append(char)
 
 	# instantiate map class as columns x rows
-	map_struct = Map()
+	map_struct = Level()
 	for j in range(len(map_data[0])):
 		for i in range(len(map_data)):
 			map_struct.append(map_data[i][j])
@@ -51,7 +37,7 @@ def run(path_to_map, n_maps, n, d, s):
 
 	################ DEBUG FOR REACHABILITY #################
 	# substructures = []
-	# g_s, g_f = instantiate_base_map(len(substructures)+1)
+	# g_s, g_f = instantiate_base_level(len(substructures)+1)
 	# #logger.info("g_s: \n{}, \ng_f: \n{}".format(g_s.pretty_print(), g_f.pretty_print()))
 	# substructures.append(g_s)
 	# substructures.append(g_f)
@@ -66,7 +52,7 @@ def run(path_to_map, n_maps, n, d, s):
 	############################################
 
 	# Generate a Map-Matrix structure to hold the original map
-	map_data = read_map(path_to_map)
+	map_data = read_level(path_to_map)
 	logger.info("Selected Map File: {}".format(path_to_map))
 	logger.info("Rows: {}, Columns: {}".format(map_data.n_rows, map_data.n_cols))
 	logger.info(map_data.pretty_print())
@@ -97,7 +83,7 @@ def run(path_to_map, n_maps, n, d, s):
 	# Step 3
 	# Instantiate starting and finishing substructures of the map
 	# and add them to the list of substructures for the next step
-	g_s, g_f = instantiate_base_map(len(substructures)+1)
+	g_s, g_f = instantiate_base_level(len(substructures)+1)
 	#logger.info("g_s: \n{}, \ng_f: \n{}".format(g_s.pretty_print(), g_f.pretty_print()))
 	substructures.append(g_s)
 	substructures.append(g_f)
@@ -193,15 +179,4 @@ def run(path_to_map, n_maps, n, d, s):
 
 		output_file.close()
 
-		generated_structure.save_as_map("output/output_{}.txt".format(i))
-
-
-if __name__ == '__main__':
-	opt, args = parse_args(sys.argv[1:])
-	sys.setrecursionlimit(10000) # required for some of the operations
-
-	output_directory = "output/"
-	if not os.path.exists(output_directory):
-		os.makedirs(output_directory)
-
-	run(opt.mapfile, opt.output_number, opt.n, opt.d, opt.s)
+		generated_structure.save_as_level("output/output_{}.txt".format(i))
