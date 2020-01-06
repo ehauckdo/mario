@@ -1,4 +1,5 @@
 import sys, os
+from pathlib import Path
 from .metrics import calculate_leniency
 import logging, inspect
 
@@ -32,7 +33,7 @@ def normalize(number_list):
 		number_list[i] = (val-amin) / (amax-amin)
 	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 
-def compute_metrics(maps_folder="data/mapsNotchDif4"):
+def compute_metrics(maps_folder=str(Path(__file__).parent)+"/data/mapsNotchDif4/"):
 	maps = read_maps(maps_folder)
 
 	# calculate the leniency for all the maps found
