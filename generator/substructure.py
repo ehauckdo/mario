@@ -241,8 +241,6 @@ class Substructure:
 		return "ID: {}\n Nodes: {}\n Connecting Nodes: {}".format(self.id,self.nodes, self.connecting)
 
 	def pretty_print(self, symbols=True):
-		full_string = "#"
-
 		generated = Level()
 
 		for n in self.nodes:
