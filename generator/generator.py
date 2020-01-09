@@ -75,7 +75,7 @@ def run(path_to_map, n_maps, n, d, s):
 	logger.info("Substructures after relativization:")
 	for s in substructures:
 		s.relativize_coordinates()
-		logger.info("\n{}".format(s.pretty_print()))
+		logger.info("\n{}".format(s.pretty_print_nodes()))
 
 	# Step 3
 	# Instantiate starting and finishing substructures of the map
