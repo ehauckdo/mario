@@ -1,5 +1,6 @@
 import sys, os
 from PIL import Image
+import optparse
 
 def parse_file(filename):
 	map_data = []
@@ -17,9 +18,17 @@ def load_tile_images(tiles):
         tile_dict[symbol] = Image.open(t)
     return tile_dict
 
+def parse_args(args):
+	usage = "usage: %prog [options]"
+	parser = optparse.OptionParser(usage=usage)
+	parser.add_option('-i', action="store", type="string", dest="input_file",help="Path/name of the map file", default="input_level.txt")
+	parser.add_option('-o', action="store", type="string", dest="output_file",help="Number of maps to be generated", default="output_level.png")
+	(opt, args) = parser.parse_args()
+	return opt, args
+
 if __name__ == '__main__':
-    filename = "input_level.txt"
-    level = parse_file(filename)
+    opt, args = parse_args(sys.argv[1:])
+    level = parse_file(opt.input_file)
 
     level_width = len(level[0])
     level_height = len(level)
@@ -49,4 +58,4 @@ if __name__ == '__main__':
         y_offset += tile_height
         x_offset = 0
 
-    new_im.save('output_level.png')
+    new_im.save(opt.output_file)
