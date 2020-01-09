@@ -241,8 +241,6 @@ class Substructure:
 		return "ID: {}\n Nodes: {}\n Connecting Nodes: {}".format(self.id,self.nodes, self.connecting)
 
 	def pretty_print(self, symbols=True):
-		full_string = "#"
-
 		generated = Level()
 
 		for n in self.nodes:
@@ -250,6 +248,26 @@ class Substructure:
 
 			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
 		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
+		for n in self.connecting:
+			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
+
+		return generated.pretty_print()
+
+	def pretty_print_nodes(self, symbols=True):
+		generated = Level()
+		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
+
+		for n in self.nodes:
+			# print("Inserting node: {},{}".format(n.r, n.c))
+			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
+		for n in self.connecting:
+			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
+
+		# horrible, horrible hack
+		for i in range(len(generated.map_data)):
+				generated.map_data[i] = " "
+		for n in self.nodes:
+			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
 		for n in self.connecting:
 			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
 
