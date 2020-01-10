@@ -6,6 +6,8 @@ from generator import generator
 from generator import level_generation
 from generator import substructure_extraction
 from generator import substructure_combine
+from helper import io
+from tools.render_level.render_level import render_structure
 
 logging.basicConfig(filename="logs/log", level=logging.INFO, filemode='w')
 
@@ -22,11 +24,13 @@ def parse_args(args):
 	return opt, args
 
 if __name__ == '__main__':
+
 	opt, args = parse_args(sys.argv[1:])
 	sys.setrecursionlimit(10000) # required for some of the operations
 
-    # make sure the output directory exists, otherwise create it
+	# make sure the output directory exists, otherwise create it
 	Path("output/structures/").mkdir(parents=True, exist_ok=True)
+	Path("output/levels/").mkdir(parents=True, exist_ok=True)
 
 	# Randomnly select 'n' points from in the map
 	# with a minimum of D size and extended size S
@@ -42,9 +46,18 @@ if __name__ == '__main__':
 	substructures.remove(g_s)
 	substructures.remove(g_f)
 
-	output_file = open("output/output_substructures_stats.txt", "w")
+	for s in substructures:
+		io.save(s, "output/structures/s_{}".format(s.id))
+		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+
+	output_file = open("output/levels/level_stats.txt", "w")
 	for s in substructures:
 		print("{}, {}, {}".format(s.id, len(s.connecting), len(s.get_available_substitutions())), file=output_file)
 	output_file.close()
 
-	level_generation.generate_levels(substructures, g_s, g_f, opt.output_number)
+	for n in range(opt.output_number):
+		level, stats = level_generation.generate_level(substructures, g_s, g_f)
+		level_path = "output/levels/level_{}.txt".format(n)
+		print("Rendering level {}".format(n))
+		level.save_as_level(level_path)
+		render_structure(level_path, "output/levels/level_{}.png".format(n))

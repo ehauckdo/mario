@@ -81,12 +81,12 @@ class Substructure:
 
 		for i in range(len(s2_adjusted.nodes)-1, -1, -1):
 			n = s2_adjusted.nodes[i]
-			if n.r < 0 or n.r > 15:
+			if n.r < 0 or n.r > 15 or n.c < 0:
 				s2_adjusted.nodes.remove(n)
 
 		for i in range(len(s2_adjusted.connecting)-1, -1, -1):
 			n = s2_adjusted.connecting[i]
-			if n.r < 0 or n.r > 15:
+			if n.r < 0 or n.r > 15 or n.c < 0:
 				s2_adjusted.connecting.remove(n)
 
 		return s2_adjusted
@@ -240,18 +240,66 @@ class Substructure:
 	def __repr__(self):
 		return "ID: {}\n Nodes: {}\n Connecting Nodes: {}".format(self.id,self.nodes, self.connecting)
 
-	def pretty_print(self, symbols=True):
+	def matrix_representation(self):
 		generated = Level()
 
 		for n in self.nodes:
-			# print("Inserting node: {},{}".format(n.r, n.c))
-
-			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
+			generated.set(n.r, n.c, n.tile)
 		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
 		for n in self.connecting:
 			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
 
-		return generated.pretty_print()
+		return generated.matrix_representation()
+
+	def level_representation(self, filler=True):
+		# 1: find the highest column values
+		highest_column = 0
+		for n in self.nodes + self.connecting:
+			if n.c > highest_column:
+				highest_column = n.c
+
+		# 2: create a matrix with [16][n_columns]
+		base_tile = "-" if filler else " "
+		level = [[" " for i in range(highest_column+1)] for j in range(16)]
+
+		# 3: fill the matrix with * where * is a
+		# placeholder image (maybe an empty 17x16 png)
+
+		# 4: iterate over all nodes and place tiles in
+		# the appropriate locations in the matrix
+		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
+		for n in self.nodes:
+			level[n.r][n.c] = n.tile
+		for n in self.connecting:
+			level[n.r][n.c] = directions[n.edges[0].properties["direction"]]
+
+		# 5: return the matrix, to be used in render_level
+		return level
+
+	def pretty_print(self, filler=True):
+
+		level = self.level_representation(filler)
+		full_string = ""
+
+		for row in level:
+			row_str = ""
+			for tile in row:
+				row_str += tile
+			full_string += row_str + "\n"
+
+		return full_string
+
+		# generated = Level()
+		#
+		# for n in self.nodes:
+		# 	# print("Inserting node: {},{}".format(n.r, n.c))
+		#
+		# 	generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
+		# directions = {"r":">", "l":"<", "u":"^", "d":"v"}
+		# for n in self.connecting:
+		# 	generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
+		#
+		# return generated.pretty_print()
 
 	def pretty_print_nodes(self, symbols=True):
 		generated = Level()

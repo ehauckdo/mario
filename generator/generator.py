@@ -176,4 +176,4 @@ def run(path_to_map, n_maps, n, d, s):
 
 		output_file.close()
 
-		generated_structure.save_as_level("output/output_{}.txt".format(i))
+		generated_structure.save_as_level("output/levels/level_{}.txt".format(i))

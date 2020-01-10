@@ -50,6 +50,6 @@ def extract_structures(path_to_map, n, d, s):
 	logger.info("Substructures after relativization:")
 	for s in substructures:
 		s.relativize_coordinates()
-		logger.info("\n{}".format(s.pretty_print_nodes()))
+		logger.info("\n{}".format(s.pretty_print()))
 
 	return substructures

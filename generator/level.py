@@ -56,6 +56,14 @@ class Level:
 			# print(row)
 		return full_string
 
+	def matrix_representation(self):
+		level = []
+		for i in range(self.n_rows):
+			level.append([])
+			for j in range(self.n_cols):
+				level[-1].append(self.get(i, j))
+		return level
+
 	def save_level(self, level_filename="output.txt"):
 		output_file = open(level_filename, "w")
 
@@ -65,5 +73,4 @@ class Level:
 				tile = self.get(r, c)
 				string += str(tile)
 			print(string, sep='', file=output_file)
-		print("Level saved...!")
 		output_file.close()
