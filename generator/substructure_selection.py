@@ -136,9 +136,9 @@ def get_substructures(map_data, points, D=5, S=2):
 						node_2.connectors = []
 						connecting_nodes.append(node_2)
 
-						node_1.add_edge(node_2, {"direction":direc, "combinable":[]})
+						node_1.add_edge(node_2, {"direction":direc, "combined":None, "combinable":[]})
 						oppos_direc = switcher[direc]
-						node_2.add_edge(node_1, {"direction":oppos_direc, "combinable":[]})
+						node_2.add_edge(node_1, {"direction":oppos_direc, "combined":None, "combinable":[]})
 
 						cluster_collisions[current_id].append(collided_id)
 						cluster_collisions[collided_id].append(current_id)

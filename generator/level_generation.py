@@ -4,6 +4,33 @@ from .substructure import Substructure, Node
 
 logger = logging.getLogger(__name__)
 
+def generate_level_search(substructures, g_s, g_f):
+
+	pass
+
+	# generation_tree = []
+
+	# level = g_s
+
+	# current_step = 0
+	# generation_tree.append(level.all_possible_combinations)
+
+	# structure = level.get_substructure
+
+	# generation_tree[current_step].remove(structure)
+
+	# level.combine(structure)
+
+	# current_step = 1
+
+	#generation_tree.append(level.all_possible_combinations)
+
+	# no more combinations are available
+	#if len(generation_tree[current_step]) == 0:
+	#	generation_tree.pop()
+	#   current_step = current_step - 1
+
+
 def generate_level(substructures, g_s, g_f):
 
 	substructures_used = {}
@@ -35,7 +62,7 @@ def generate_level(substructures, g_s, g_f):
 
 			sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
 			sim_available_substitutions = sim_structure.get_available_substitutions()
-			if collides: #or len(sim_available_substitutions) <= 0:
+			if collides or len(sim_available_substitutions) <= 0:
 				# logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
 				logger.info("Simulated structure collides, trying next...")
 				continue
@@ -60,11 +87,12 @@ def generate_level(substructures, g_s, g_f):
 
 		if count_substitutions >= 30:
 			for connecting in generated_structure.connecting:
-				for s_id, n2 in connecting.edges[0].properties["combinable"]:
-					if s_id == g_f.id:
-						generated_structure.expand(g_f, connecting, n2)
-						available_substitutions = []
-						break
+				if connecting.edges[0].properties["combined"] == None:
+					for s_id, n2 in connecting.edges[0].properties["combinable"]:
+						if s_id == g_f.id:
+							generated_structure.expand(g_f, connecting, n2)
+							available_substitutions = []
+							break
 
 	return generated_structure, substructures_used
 
@@ -82,7 +110,7 @@ def instantiate_base_level(id_substructures):
 	g_s.insert_node(mario)
 
 	connecting = Node(15, 3, "*", g_s.id, 0, 0, "Connecting")
-	connecting.add_edge(connecting, {"direction":"r", "combinable":[]})
+	connecting.add_edge(connecting, {"direction":"r", "combined":None, "combinable":[]})
 	g_s.insert_node(connecting)
 
 	id_substructures += 1
@@ -101,7 +129,7 @@ def instantiate_base_level(id_substructures):
 
 	connecting = Node(15, 0, "*", g_f.id, 0, 0, "Connecting")
 	connecting.id =  g_f.id
-	connecting.add_edge(connecting, {"direction":"l", "combinable":[]})
+	connecting.add_edge(connecting, {"direction":"l", "combined":None, "combinable":[]})
 	g_f.insert_node(connecting)
 
 	return g_s, g_f

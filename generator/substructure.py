@@ -65,15 +65,17 @@ class Substructure:
 
 		s2_adjusted = copy.deepcopy(s2)
 
-		for c in self.connecting:
-			if c.r == c1.r and c.c == c1.c:
-				# print("Deleting connecting node from s1")
-				self.connecting.remove(c)
-				break
+		# for c in self.connecting:
+		# 	if c.r == c1.r and c.c == c1.c:
+		# 		# print("Deleting connecting node from s1")
+		# 		self.connecting.remove(c)
+		# 		break
 		for c in s2_adjusted.connecting:
 			if c.r == c2.r and c.c == c2.c:
 				# print("Deleting connecting node from s2")
-				s2_adjusted.connecting.remove(c)
+				#s2_adjusted.connecting.remove(c)
+				c1.edges[0].properties["combined"] = [s2_adjusted, c]
+				c.edges[0].properties["combined"] = [self, c1]
 				break
 
 		s2_adjusted.adjust_columns(adjust_column)
@@ -144,14 +146,22 @@ class Substructure:
 		sim_structure = copy.deepcopy(self)
 		sim_substructure = copy.deepcopy(s2)
 
+		sim_c1 = None
+		sim_c2 = None
 		for c in sim_structure.connecting:
 			if c.r == c1.r and c.c == c1.c:
-				sim_structure.connecting.remove(c)
+				sim_c1 = c
+				#sim_structure.connecting.remove(c)
 				break
 		for c in sim_substructure.connecting:
 			if c.r == c2.r and c.c == c2.c:
-				sim_substructure.connecting.remove(c)
+				sim_c2 = c
+				#sim_substructure.connecting.remove(c)
+				c.edges[0].properties["combined"] = [self, c1]
 				break
+
+		sim_c1.edges[0].properties["combined"] = [sim_substructure, sim_c2]
+		sim_c2.edges[0].properties["combined"] = [sim_structure, sim_c1]
 
 		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
 		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
@@ -209,8 +219,9 @@ class Substructure:
 	def get_available_substitutions(self):
 		substituions = []
 		for n in self.connecting:
-			for s_id, n2 in n.edges[0].properties["combinable"]:
-				substituions.append((n, s_id, n2))
+			if n.edges[0].properties["combined"] == None:
+				for s_id, n2 in n.edges[0].properties["combinable"]:
+					substituions.append((n, s_id, n2))
 		return substituions
 
 	def adjust_columns(self, adjust):
