@@ -23,15 +23,24 @@ def parse_args(args):
 	(opt, args) = parser.parse_args()
 	return opt, args
 
-if __name__ == '__main__':
+def load_structures(path="output/structures"):
+	structures = []
+	g_s = None
+	g_f = None
 
-	opt, args = parse_args(sys.argv[1:])
-	sys.setrecursionlimit(10000) # required for some of the operations
+	for file in os.listdir(path):
+		if "." not in file:
+			if file == "g_s":
+				g_s = io.load("{}/{}".format(path, file))
+			elif file == "g_f":
+				g_f = io.load("{}/{}".format(path, file))
+			else:
+				structure = io.load("{}/{}".format(path, file))
+				structures.append(structure)
 
-	# make sure the output directory exists, otherwise create it
-	Path("output/structures/").mkdir(parents=True, exist_ok=True)
-	Path("output/levels/").mkdir(parents=True, exist_ok=True)
+	return g_s, g_f, structures
 
+def fetch_structures(opt):
 	# Randomnly select 'n' points from in the map
 	# with a minimum of D size and extended size S
 	substructures = substructure_extraction.extract_structures(opt.mapfile, opt.n, opt.d, opt.s)
@@ -49,11 +58,27 @@ if __name__ == '__main__':
 	for s in substructures:
 		io.save(s, "output/structures/s_{}".format(s.id))
 		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+	io.save(g_s,  "output/structures/g_s")
+	io.save(g_f,  "output/structures/g_f")
 
 	output_file = open("output/levels/level_stats.txt", "w")
 	for s in substructures:
 		print("{}, {}, {}".format(s.id, len(s.connecting), len(s.get_available_substitutions())), file=output_file)
 	output_file.close()
+
+	return g_s, g_f, substructures
+
+if __name__ == '__main__':
+
+	opt, args = parse_args(sys.argv[1:])
+	sys.setrecursionlimit(10000) # required for some of the operations
+
+	# make sure the output directory exists, otherwise create it
+	Path("output/structures/").mkdir(parents=True, exist_ok=True)
+	Path("output/levels/").mkdir(parents=True, exist_ok=True)
+
+	g_s, g_f, substructures = load_structures()
+	#g_s, g_f, substructures = fetch_structures(opt)
 
 	for n in range(opt.output_number):
 		level, stats = level_generation.generate_level(substructures, g_s, g_f)
