@@ -31,7 +31,7 @@ def generate_level_search(substructures, g_s, g_f):
 	#   current_step = current_step - 1
 
 
-def generate_level(substructures, g_s, g_f):
+def generate_level(substructures, g_s, g_f, minimum_count=30):
 
 	substructures_used = {}
 	for s in substructures:
@@ -60,15 +60,37 @@ def generate_level(substructures, g_s, g_f):
 				if s.id == s_id:
 					break
 
-			sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
-			sim_available_substitutions = sim_structure.get_available_substitutions()
-			if collides or len(sim_available_substitutions) <= 0:
-				# logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
-				logger.info("Simulated structure collides, trying next...")
+			#sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
+			#sim_available_substitutions = sim_structure.get_available_substitutions()
+
+			adjusted_structure = generated_structure.expand(s, c1, c2)
+			sim_available_substitutions = generated_structure.get_available_substitutions()
+
+			map_matrix = [{} for i in range(16)]
+			collides = False
+			for n in generated_structure.nodes:
+				try:
+					if map_matrix[n.r][n.c] != None: collides = True
+				except:
+					map_matrix[n.r][n.c] = n.tile
+
+			if len(sim_available_substitutions) <= 0 or collides:
+				#if len(sim_available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
+				#if collides: logger.info("Collision Happened!")
+				for n in adjusted_structure.nodes:
+					generated_structure.nodes.remove(n)
+				for n in adjusted_structure.connecting:
+					generated_structure.connecting.remove(n)
+				c1.edges[0].properties["combined"] = None
 				continue
+
+			# if collides or len(sim_available_substitutions) <= 0:
+			# 	# logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
+			# 	logger.info("Simulated structure collides, trying next...")
+			# 	continue
 			else:
 
-				generated_structure = sim_structure
+				#generated_structure = sim_structure
 				selected = True
 				substructures_used[s_id] += 1
 				break
@@ -85,16 +107,18 @@ def generate_level(substructures, g_s, g_f):
 
 		count_substitutions += 1
 
-		if count_substitutions >= 30:
+		finished = False
+		if count_substitutions >= minimum_count:
 			for connecting in generated_structure.connecting:
+				if finished: break
 				if connecting.edges[0].properties["combined"] == None:
 					for s_id, n2 in connecting.edges[0].properties["combinable"]:
 						if s_id == g_f.id:
 							generated_structure.expand(g_f, connecting, n2)
 							available_substitutions = []
-							break
+							finished = True
 
-	return generated_structure, substructures_used
+	return generated_structure, substructures_used, count_substitutions
 
 def instantiate_base_level(id_substructures):
 	g_s = Substructure(id_substructures)
