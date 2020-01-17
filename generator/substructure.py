@@ -65,15 +65,8 @@ class Substructure:
 
 		s2_adjusted = copy.deepcopy(s2)
 
-		# for c in self.connecting:
-		# 	if c.r == c1.r and c.c == c1.c:
-		# 		# print("Deleting connecting node from s1")
-		# 		self.connecting.remove(c)
-		# 		break
 		for c in s2_adjusted.connecting:
 			if c.r == c2.r and c.c == c2.c:
-				# print("Deleting connecting node from s2")
-				#s2_adjusted.connecting.remove(c)
 				c1.edges[0].properties["combined"] = [s2_adjusted, c]
 				c.edges[0].properties["combined"] = [self, c1]
 				break
@@ -98,7 +91,7 @@ class Substructure:
 		map_matrix = [{} for i in range(16)]
 
 		s2_adjusted = copy.deepcopy(s2)
-		#s2_adjusted = self.adjust(s2, c1, c2)
+
 		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
 		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
 

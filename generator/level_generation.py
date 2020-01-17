@@ -34,10 +34,8 @@ def generate_level_search(substructures, g_s, g_f):
 def generate_level(substructures, g_s, g_f, minimum_count=30):
 
 	substructures_used = {}
-	for s in substructures:
+	for s in substructures+[g_s,g_f]:
 		substructures_used[s.id] = 0
-	substructures_used[g_s.id] = 0
-	substructures_used[g_f.id] = 0
 
 	logger.info("Generating level...")
 
