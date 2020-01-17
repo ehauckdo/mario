@@ -2,7 +2,6 @@ import sys, os
 import optparse
 import logging
 from pathlib import Path
-from generator import generator
 from generator import level_generation
 from generator import substructure_extraction
 from generator import substructure_combine
@@ -47,13 +46,14 @@ def fetch_structures(opt):
 
 	# Instiate the base starting and finishing structures
 	g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
-	substructures.append(g_s)
-	substructures.append(g_f)
+	#substructures.append(g_s)
+	#substructures.append(g_f)
 
-	substructure_combine.find_substructures_combinations(substructures)
+	#substructure_combine.find_substructures_combinations(substructures)
+	substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
 
-	substructures.remove(g_s)
-	substructures.remove(g_f)
+	#substructures.remove(g_s)
+	#substructures.remove(g_f)
 
 	for s in substructures:
 		io.save(s, "output/structures/s_{}".format(s.id))
@@ -80,8 +80,11 @@ if __name__ == '__main__':
 	g_s, g_f, substructures = load_structures()
 	#g_s, g_f, substructures = fetch_structures(opt)
 
+
 	for n in range(opt.output_number):
-		level, stats = level_generation.generate_level(substructures, g_s, g_f)
+		structures_used = 0
+		while structures_used < 30:
+			level, stats, structures_used = level_generation.generate_level(substructures, g_s, g_f)
 		level_path = "output/levels/level_{}.txt".format(n)
 		print("Rendering level {}".format(n))
 		level.save_as_level(level_path)
