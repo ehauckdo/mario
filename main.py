@@ -13,11 +13,12 @@ logging.basicConfig(filename="logs/log", level=logging.INFO, filemode='w')
 def parse_args(args):
 	usage = "usage: %prog [options]"
 	parser = optparse.OptionParser(usage=usage)
-	parser.add_option('-m', action="store", type="string", dest="mapfile",help="Path/name of the map file", default="maps/lvl-1.txt")
-	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of maps to be generated", default=1)
+	parser.add_option('-l', action="store", type="string", dest="mapfile",help="Path/name of the level file", default="maps/lvl-1.txt")
+	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of level to be generated", default=1)
 	parser.add_option('-n', action="store", type="int", dest="n",help="Number of structures to be selected", default=30)
 	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=3)
 	parser.add_option('-s', action="store", type="int", dest="s",help="Extended radius of structures based on similarity", default=8)
+	parser.add_option('-m', action="store", type="int", dest="min_structures",help="Minimum number of structures to be placed on a level", default=15)
 
 	(opt, args) = parser.parse_args()
 	return opt, args
@@ -46,20 +47,12 @@ def fetch_structures(opt):
 
 	# Instiate the base starting and finishing structures
 	g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
-	#substructures.append(g_s)
-	#substructures.append(g_f)
 
-	#substructure_combine.find_substructures_combinations(substructures)
 	substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
 
-	#substructures.remove(g_s)
-	#substructures.remove(g_f)
-
-	for s in substructures:
+	for s in substructures+ [g_s, g_f]:
 		io.save(s, "output/structures/s_{}".format(s.id))
 		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
-	io.save(g_s,  "output/structures/g_s")
-	io.save(g_f,  "output/structures/g_f")
 
 	output_file = open("output/levels/level_stats.txt", "w")
 	for s in substructures:
@@ -80,11 +73,10 @@ if __name__ == '__main__':
 	g_s, g_f, substructures = load_structures()
 	#g_s, g_f, substructures = fetch_structures(opt)
 
-
 	for n in range(opt.output_number):
 		structures_used = 0
-		while structures_used < 30:
-			level, stats, structures_used = level_generation.generate_level(substructures, g_s, g_f)
+		while structures_used < opt.min_structures:
+			level, stats, structures_used = level_generation.generate_level(substructures, g_s, g_f, opt.min_structures)
 		level_path = "output/levels/level_{}.txt".format(n)
 		print("Rendering level {}".format(n))
 		level.save_as_level(level_path)

@@ -4,38 +4,13 @@ from .substructure import Substructure, Node
 
 logger = logging.getLogger(__name__)
 
-def generate_level_search(substructures, g_s, g_f):
-
-	pass
-
-	# generation_tree = []
-
-	# level = g_s
-
-	# current_step = 0
-	# generation_tree.append(level.all_possible_combinations)
-
-	# structure = level.get_substructure
-
-	# generation_tree[current_step].remove(structure)
-
-	# level.combine(structure)
-
-	# current_step = 1
-
-	#generation_tree.append(level.all_possible_combinations)
-
-	# no more combinations are available
-	#if len(generation_tree[current_step]) == 0:
-	#	generation_tree.pop()
-	#   current_step = current_step - 1
-
-
-def generate_level(substructures, g_s, g_f, minimum_count=30):
+def generate_level(substructures, g_s, g_f, minimum_count=10):
 
 	substructures_used = {}
+	substructures_dict = {}
 	for s in substructures+[g_s,g_f]:
 		substructures_used[s.id] = 0
+		substructures_dict[s.id] = s
 
 	logger.info("Generating level...")
 
@@ -54,9 +29,7 @@ def generate_level(substructures, g_s, g_f, minimum_count=30):
 		while len(available_substitutions) > 0:
 			c1, s_id, c2 = random.choice(available_substitutions)
 			available_substitutions.remove((c1,s_id, c2))
-			for s in substructures:
-				if s.id == s_id:
-					break
+			s = substructures_dict[s_id]
 
 			#sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
 			#sim_available_substitutions = sim_structure.get_available_substitutions()
@@ -105,16 +78,14 @@ def generate_level(substructures, g_s, g_f, minimum_count=30):
 
 		count_substitutions += 1
 
-		finished = False
 		if count_substitutions >= minimum_count:
-			for connecting in generated_structure.connecting:
-				if finished: break
+			logger.info("Over minimum structure limit. Trying to combine g_f...")
+			for connecting in sorted(generated_structure.connecting, key=lambda x: x.c, reverse=True):
 				if connecting.edges[0].properties["combined"] == None:
 					for s_id, n2 in connecting.edges[0].properties["combinable"]:
 						if s_id == g_f.id:
 							generated_structure.expand(g_f, connecting, n2)
-							available_substitutions = []
-							finished = True
+							return generated_structure, substructures_used, count_substitutions
 
 	return generated_structure, substructures_used, count_substitutions
 
@@ -139,13 +110,13 @@ def instantiate_base_level(id_substructures):
 
 	g_f = Substructure(id_substructures)
 
-	for c  in range(2,4):
-		platform = Node(11, c, "X")
+	for c in range(3):
+		platform = Node(15, c, "X")
 		platform.type = "Solid"
 		platform.cluster_id = g_f.id
 		g_f.insert_node(platform)
 
-	finish = Node(10, 2, "F")
+	finish = Node(14, 2, "F")
 	finish.cluster_id = g_f.id
 	g_f.insert_node(finish)
 
