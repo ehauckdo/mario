@@ -139,56 +139,7 @@ class Substructure:
 		self.nodes.extend(s2_adjusted.nodes)
 		self.connecting.extend(s2_adjusted.connecting)
 
-		return
-
-	def simulate_expansion(self, s2, c1, c2):
-		collides = False
-		sim_structure = copy.deepcopy(self)
-		sim_substructure = copy.deepcopy(s2)
-
-		sim_c1 = None
-		sim_c2 = None
-		for c in sim_structure.connecting:
-			if c.r == c1.r and c.c == c1.c:
-				sim_c1 = c
-				#sim_structure.connecting.remove(c)
-				break
-		for c in sim_substructure.connecting:
-			if c.r == c2.r and c.c == c2.c:
-				sim_c2 = c
-				#sim_substructure.connecting.remove(c)
-				c.edges[0].properties["combined"] = [self, c1]
-				break
-
-		sim_c1.edges[0].properties["combined"] = [sim_substructure, sim_c2]
-		sim_c2.edges[0].properties["combined"] = [sim_structure, sim_c1]
-
-		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
-		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
-
-		n1_direction = c1.edges[0].properties["direction"]
-		n2_direction = c2.edges[0].properties["direction"]
-
-		adjust_column = (c1.c + (horizontal[n1_direction])) - c2.c
-		adjust_row = (c1.r + (vertical[n2_direction])) - c2.r
-
-		sim_substructure.simulate_adjust_columns(adjust_column)
-		sim_substructure.simulate_adjust_rows(adjust_row)
-
-		map_matrix = [{} for i in range(16)]
-		for n in sim_substructure.nodes:
-				map_matrix[n.r][n.c] = n.tile
-		for n in sim_structure.nodes:
-				try:
-					if map_matrix[n.r][n.c] != None:
-						collides = True
-				except:
-					pass
-
-		sim_structure.nodes.extend(sim_substructure.nodes)
-		sim_structure.connecting.extend(sim_substructure.connecting)
-
-		return sim_structure, collides
+		return s2_adjusted
 
 	def simulate_adjust_columns(self, adjust):
 		for index in range(len(self.nodes)-1, -1, -1):
