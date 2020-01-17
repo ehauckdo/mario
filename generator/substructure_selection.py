@@ -90,6 +90,7 @@ def get_substructures(map_data, points, D=5, S=2):
 
 		r, c = node.r, node.c
 		directions = [("d",r+1,c), ("r",r, c+1), ("u",r-1, c), ("l",r, c-1)]
+		#directions = [("d",r+1,c), ("r",r, c+1), ("u",r-1, c), ("l",r, c-1), ("r",r+1,c+1), ("r",r-1, c+1), ("l",r-1, c-1), ("l",r+1, c-1)]
 		switcher = {"r":"l", "l":"r", "u":"d", "d":"u"}
 		n_rows, n_cols = map_data.n_rows, map_data.n_cols
 
