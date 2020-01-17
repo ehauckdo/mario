@@ -2,13 +2,14 @@ import math
 
 class Level:
 
-	def __init__(self):
+	def __init__(self, filler="-"):
 		self.map_data = []
 		self.n_rows = 16
 		self.n_cols = 1
+		self.filler = filler
 
 		for r in range(self.n_rows): #* self.n_cols):
-			self.map_data.append("-")
+			self.map_data.append(filler)
 
 	def append(self, value):
 		self.map_data.append(value)
@@ -28,10 +29,10 @@ class Level:
 		#print("Current number of columns: {}, total: {}".format(self.n_cols, len(self.map_data)))
 
 		while len(self.map_data)-1 < self.n_rows * y + x:
-			self.append("-")
+			self.append(self.filler)
 
 		while len(self.map_data) % 16 != 0:
-			self.append("-")
+			self.append(self.filler)
 
 		#print("After appending: {}, total: {}".format(self.n_cols, len(self.map_data)))
 

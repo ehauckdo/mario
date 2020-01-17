@@ -125,7 +125,7 @@ class Substructure:
 		return False
 
 	def expand(self, s2, c1, c2):
-		logger.info("Connecting structure {} with {} by using connecting nodes {} and {}".format(self.id, s2.id, c1, c2))
+		#logger.info("Connecting structure {} with {} by using connecting nodes {} and {}".format(self.id, s2.id, c1, c2))
 
 		s2_adjusted = self.adjust(s2, c1, c2)
 
@@ -176,8 +176,6 @@ class Substructure:
 		for n in self.nodes+self.connecting:
 			n.r += adjust
 
-
-
 	def relativize_coordinates(self):
 
 		if len(self.nodes) + len(self.connecting) < 1:
@@ -196,7 +194,7 @@ class Substructure:
 		return "ID: {}\n Nodes: {}\n Connecting Nodes: {}".format(self.id,self.nodes, self.connecting)
 
 	def matrix_representation(self):
-		generated = Level()
+		generated = Level(" ")
 
 		for n in self.nodes:
 			generated.set(n.r, n.c, n.tile)
