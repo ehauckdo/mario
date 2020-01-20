@@ -50,9 +50,13 @@ def fetch_structures(opt):
 
 	substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
 
-	for s in substructures+ [g_s, g_f]:
+	for s in substructures:
 		io.save(s, "output/structures/s_{}".format(s.id))
 		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+	io.save(g_s, "output/structures/g_s")
+	render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
+	io.save(g_f, "output/structures/g_f")
+	render_structure(g_f.matrix_representation(), "output/structures/g_f.png")
 
 	output_file = open("output/levels/level_stats.txt", "w")
 	for s in substructures:

@@ -29,6 +29,7 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 		while len(available_substitutions) > 0:
 			c1, s_id, c2 = random.choice(available_substitutions)
 			available_substitutions.remove((c1,s_id, c2))
+			if s_id == g_s.id or s_id == g_f.id: continue
 			s = substructures_dict[s_id]
 
 			#sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
@@ -110,7 +111,7 @@ def instantiate_base_level(id_substructures):
 
 	g_f = Substructure(id_substructures)
 
-	for c in range(3):
+	for c in range(1, 3):
 		platform = Node(15, c, "X")
 		platform.type = "Solid"
 		platform.cluster_id = g_f.id
