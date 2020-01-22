@@ -41,9 +41,6 @@ def extract_structures(path_to_map, n, d, s):
 	# points. If tiles around the edges are the same as of the edges,
 	# this expansion can continue for more S manhattan-distance.
 	substructures = get_substructures_rect(map_data, selected_points, d, s)
-	logger.info("Exiting...")
-	import sys
-	sys.exit()
 	logger.info("Selected Substructures: ")
 	for s in substructures:
 		logger.info("\n{}".format(s.pretty_print(True)))
