@@ -26,6 +26,165 @@ def pretty_print_graph_map(graph_map, tiles=False):
 			row += "\n"
 		logger.info(row)
 
+def pretty_print_graph_map_rect(graph_map, tiles=False):
+
+	import string
+	symbols = {0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h"}
+	size = len(string.ascii_lowercase)
+
+	if tiles:
+		row = "\n"
+		for g in graph_map:
+			for v in g:
+				if v == None: row += " "
+				else: row += "{}".format(v)
+			row += "\n"
+		logger.info(row)
+
+	else:
+		row = "\n"
+		for g in graph_map:
+			for v in g:
+				if v == None: row += " "
+				else: row += "{}".format(string.ascii_lowercase[v%size])
+			row += "\n"
+		logger.info(row)
+
+def update_graph_map(graph_map, id, x_min, x_max, y_min, y_max):
+	collisions = []
+	if x_min < 0 or y_min < 0:
+		raise IndexError
+	for x in range(x_min, x_max+1):
+		for y in range(y_min, y_max+1):
+			if graph_map[x][y] != None and graph_map[x][y] != id:
+				logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y]))
+				collisions.append([graph_map[x][y],x, y])
+
+	if len(collisions) == 0:
+		for x in range(x_min, x_max+1):
+			for y in range(y_min, y_max+1):
+				graph_map[x][y] = id
+
+	# remove duplicates from list
+	if len(collisions) > 0:
+		collisions = dict((x[0], x) for x in collisions).values()
+
+	pretty_print_graph_map_rect(graph_map)
+	return collisions
+
+def get_substructures_rect(map_data, points, D=5, S=2):
+
+	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
+
+	cluster_collisions = {}
+	cluster_id = 1
+
+	clusters = []
+	finished_clusters = []
+	#moves = {"LEFT":"DOWN", "DOWN":"RIGHT", "RIGHT":"UP", "UP":"LEFT"}
+	effects = {"LEFT":(0,-1), "DOWN":(1,0), "RIGHT":(0,1), "UP":(-1,0)}
+
+	for p in points:
+		# set id of cluster in graph map
+		graph_map[p[0]][p[1]] = cluster_id
+
+		# initialize an empty list to save collisions of this cluster
+		cluster_collisions[cluster_id] = {}
+		logger.debug(" Setting core point (id {}) x: {}, y: {}".format(cluster_id, p[0],p[1]))
+		# fields: id, x_min, x_max, y_min, y_max
+		clusters.append([cluster_id, p[0], p[0], p[1], p[1], {"LEFT":"DOWN", "DOWN":"RIGHT", "RIGHT":"UP", "UP":"LEFT"}, "UP"])
+
+		cluster_id += 1
+
+	pretty_print_graph_map_rect(graph_map)
+
+	while len(clusters) > 0:
+	#for i in range(500):
+		# get the first cluster reference from the list
+		id, r_min, r_max, c_min, c_max, moves, prev_move = clusters.pop(0)
+		move = moves[prev_move]
+		logger.info("id: {}, r_min: {}, r_max:{}, c_min:{}, c_max:{}, move: {}".format(id, r_min, r_max, c_min, c_max, move))
+		logger.info("Move list: {}".format(moves))
+		# obtain the delta values for x and y
+		delta_r, delta_c = effects[move]
+
+		r_min_new = r_min + delta_r if delta_r < 0 else r_min
+		r_max_new = r_max + delta_r if delta_r > 0 else r_max
+		c_min_new = c_min + delta_c if delta_c < 0 else c_min
+		c_max_new = c_max + delta_c if delta_c > 0 else c_max
+
+		#logger.info("r_min_new: {}, r_max_new:{}, c_min_new:{}, c_max_new:{}".format(r_min_new, r_max_new, c_min_new, c_max_new))
+
+		# change is on the y coordinate
+		#if delta_c == 0:
+			#logger.info("Y is the same")
+			#for y in range(c_min_new, c_max_new+1):
+			#	logger.info("New node: x:{}, y:{}".format(r_min_new, y))
+		#	clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves[move]])
+
+		#if delta_r == 0:
+			#logger.info("X is the same")
+			#for x in range(r_min_new, r_max_new+1):
+			#	logger.info("New node: x:{}, y:{}".format(x, c_max_new))
+		#	clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves[move]])
+
+		logger.info("Tentative: r_min: {}, r_max:{}, c_min:{}, c_max:{}".format(r_min_new, r_max_new, c_min_new, c_max_new))
+		try:
+			collisions = update_graph_map(graph_map, id, r_min_new, r_max_new, c_min_new, c_max_new)
+			if len(collisions) > 0:
+				logger.info("Found collisions between when expanding structure {}".format(id))
+				for other_id, r, c in collisions:
+					if other_id not in cluster_collisions[id].keys():
+						cluster_collisions[id][other_id] = (r, c)
+						other_r = r + 1 if move == "UP" else r - 1 if move == "DOWN" else r
+						other_c = c + 1 if move == "RIGHT" else c - 1 if move == "LEFT" else c
+						cluster_collisions[other_id][id] = (other_r, other_c)
+						# create connecting nodes here in the appropriate locations
+						logger.info("Expanding Structure structure {}, r {}, c {}".format(id, other_r, other_c))
+						logger.info("Collided structure {}, r {}, c {}".format(other_id, r, c))
+				next_move = moves[move]
+				if move == next_move:
+					logger.info("Cluster has finished expansion.")
+					finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
+				else:
+					moves[prev_move] = next_move
+					move = prev_move
+					r_min_new = r_min
+					r_max_new = r_max
+					c_min_new = c_min
+					c_max_new = c_max
+					clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+
+			else:
+				logger.info("No collisions found. Proceeding regular expansion...")
+				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+
+		except IndexError:
+			logger.info("Accessing invalid index. Reverting expansion")
+			next_move = moves[move]
+			if move == next_move:
+				logger.info("Cluster has finished expansion.")
+				finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
+			else:
+				moves[prev_move] = next_move
+				move = prev_move
+				r_min_new = r_min
+				r_max_new = r_max
+				c_min_new = c_min
+				c_max_new = c_max
+				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+
+	logger.info("Clusters at the end of expansions: ")
+	for id, r_min, x_max, c_min, c_max in finished_clusters:
+		logger.info("id: {}, r_min: {}, r_max:{}, c_min:{}, c_max:{}, move: {}".format(id, r_min, x_max, c_min, c_max, move))
+
+	logger.info("All connecting nodes to-be created:")
+	for id in cluster_collisions.keys():
+		logger.info("Structure {}:".format(id))
+		for other_id in cluster_collisions[id].keys():
+			r, c = cluster_collisions[id][other_id]
+			logger.info("- Connecting node with {} at r: {}, c: {}".format(other_id, r, c))
+
 def append_adjacent_edges(graph_map):
 
 	for r in range(len(graph_map)):

@@ -48,15 +48,15 @@ def fetch_structures(opt):
 	# Instiate the base starting and finishing structures
 	g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
 
-	substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
+	#substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
 
-	for s in substructures:
-		io.save(s, "output/structures/s_{}".format(s.id))
-		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
-	io.save(g_s, "output/structures/g_s")
-	render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
-	io.save(g_f, "output/structures/g_f")
-	render_structure(g_f.matrix_representation(), "output/structures/g_f.png")
+	# for s in substructures:
+	# 	io.save(s, "output/structures/s_{}".format(s.id))
+	# 	render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+	# io.save(g_s, "output/structures/g_s")
+	# render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
+	# io.save(g_f, "output/structures/g_f")
+	# render_structure(g_f.matrix_representation(), "output/structures/g_f.png")
 
 	output_file = open("output/levels/level_stats.txt", "w")
 	for s in substructures:
@@ -74,8 +74,10 @@ if __name__ == '__main__':
 	Path("output/structures/").mkdir(parents=True, exist_ok=True)
 	Path("output/levels/").mkdir(parents=True, exist_ok=True)
 
-	g_s, g_f, substructures = load_structures()
-	#g_s, g_f, substructures = fetch_structures(opt)
+	#g_s, g_f, substructures = load_structures()
+	g_s, g_f, substructures = fetch_structures(opt)
+
+	sys.exit()
 
 	for n in range(opt.output_number):
 		structures_used = 0

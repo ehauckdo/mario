@@ -1,7 +1,7 @@
 import logging
 from .level import Level
 from .point_selection import get_points
-from .substructure_selection import get_substructures
+from .substructure_selection import get_substructures, get_substructures_rect
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,10 @@ def extract_structures(path_to_map, n, d, s):
 	# Expansion will be done until D manhattan-distance from the core
 	# points. If tiles around the edges are the same as of the edges,
 	# this expansion can continue for more S manhattan-distance.
-	substructures = get_substructures(map_data, selected_points, d, s)
+	substructures = get_substructures_rect(map_data, selected_points, d, s)
+	logger.info("Exiting...")
+	import sys
+	sys.exit()
 	logger.info("Selected Substructures: ")
 	for s in substructures:
 		logger.info("\n{}".format(s.pretty_print(True)))
