@@ -84,9 +84,14 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 
 	pretty_print_graph_map(graph_map)
 
+	def failed_expansion():
+		moves[prev_move] = next_move
+		move = prev_move
+		r_min_new, r_max_new = r_min, r_max
+		c_min_new, c_max_new = c_min, c_max
+		clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+
 	while len(clusters) > 0:
-	#for i in range(500):
-		# get the first cluster reference from the list
 		id, r_min, r_max, c_min, c_max, moves, prev_move = clusters.pop(0)
 		move = moves[prev_move]
 		logger.info("id: {}, r_min: {}, r_max:{}, c_min:{}, c_max:{}, move: {}".format(id, r_min, r_max, c_min, c_max, move))
@@ -107,9 +112,9 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 				for other_id, r, c in collisions:
 					if other_id not in cluster_collisions[id].keys():
 						#logger.info("id: {}, other_id: {}, r: {}, c: {}".format(id, other_id, r, c))
-						cluster_collisions[id][other_id] = (r, c)
 						other_r = r - 1 if move == "u" else r + 1 if move == "d" else r
 						other_c = c - 1 if move == "r" else c + 1 if move == "l" else c
+						cluster_collisions[id][other_id] = (r, c)
 						cluster_collisions[other_id][id] = (other_r, other_c)
 						logger.info("Expanding Structure structure {}, r {}, c {}".format(id, other_r, other_c))
 						logger.info("Collided structure {}, r {}, c {}".format(other_id, r, c))
@@ -127,14 +132,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 					logger.info("Cluster has finished expansion.")
 					finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
 				else:
-					moves[prev_move] = next_move
-					move = prev_move
-					r_min_new = r_min
-					r_max_new = r_max
-					c_min_new = c_min
-					c_max_new = c_max
-					clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
-
+					failed_expansion()
 			else:
 				logger.info("No collisions found. Proceeding regular expansion...")
 				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
@@ -146,13 +144,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 				logger.info("Cluster has finished expansion.")
 				finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
 			else:
-				moves[prev_move] = next_move
-				move = prev_move
-				r_min_new = r_min
-				r_max_new = r_max
-				c_min_new = c_min
-				c_max_new = c_max
-				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+				failed_expansion()
 
 	logger.info("Clusters at the end of expansions: ")
 	for id, r_min, x_max, c_min, c_max in finished_clusters:
