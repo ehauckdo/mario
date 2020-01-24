@@ -2,6 +2,9 @@ from statistics import mean
 import logging, inspect
 logger = logging.getLogger(__name__)
 
+def calculate_linearity(map_matrix):
+	pass
+
 def calculate_leniency(map_matrix):
 	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
 
