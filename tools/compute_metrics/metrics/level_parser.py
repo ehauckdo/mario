@@ -14,7 +14,7 @@ def read_level(file):
 		for char in line:
 			row.append(char)
 		map.append(row)
-	return map[:-1]
+	return map
 
 def read_folder(folder):
 	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))

@@ -1,9 +1,79 @@
 from statistics import mean
 import logging, inspect
+import numpy as np
+from sklearn.linear_model import LinearRegression
+import seaborn as seabornInstance
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import normalize
+
 logger = logging.getLogger(__name__)
 
+def get_dif_average(y, y_pred):
+
+	dif = np.absolute(y-y_pred)
+	average = np.average(dif)
+
+	return average
+
+def linear_regression(x, y):
+
+	dataset = pd.DataFrame(list(zip(x, y)), columns =['column', 'height'], dtype=np.int64)
+
+	x = np.array(x).reshape((-1, 1))
+	y = np.array(y)
+
+	model = LinearRegression(normalize=False)
+	model.fit(x, y)
+
+	y_pred = model.predict(x)
+	return y_pred
+
 def calculate_linearity(map_matrix):
-	pass
+	platform_blocks = ["X", "!", '#', 't', "Q", "S", "?", "U"]
+	np.set_printoptions(suppress=True)
+	x = []
+	y = []
+
+	for c in range(len(map_matrix[0])):
+		for r in range(len(map_matrix)):
+			tile = map_matrix[r][c]
+			if tile in platform_blocks:
+				#print(tile, r)
+				x.append(c)
+				y.append((r-15)*(-1))
+				break
+
+	y_pred = linear_regression(x, y)
+	average = get_dif_average(y, y_pred)
+	print("Average: {}".format(average))
+	return average
+
+	# dataset = pd.DataFrame(list(zip(x, y)), columns =['column', 'height'], dtype=np.int64)
+	# dataset.plot(x='column', y='height', style='o')
+	# plt.title('Column vs Height')
+	# plt.xlabel('Column')
+	# plt.ylabel('Height')
+	# plt.show()
+
+	# # convert regular python array to numpy array
+	# x = np.array(x).reshape((-1, 1))
+	# y = np.array(y)
+	#
+	#
+	# model = LinearRegression(normalize=False)
+	# model.fit(x, y)
+	# r_sq = model.score(x, y)
+	# print("Score: {}".format(r_sq))
+	# print("Intercept: {}".format(model.intercept_))
+	# print("Slope: {}".format(model.coef_))
+	# print("Prediction: ")
+	#
+	# y_pred = model.predict(x)
+	# print(y_pred)
+	# plt.scatter(x, y,  color='gray')
+	# plt.plot(x, y_pred, color='red', linewidth=2)
+	# plt.show()
 
 def calculate_leniency(map_matrix):
 	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
@@ -92,7 +162,7 @@ def find_cannons(map_matrix):
 				asterisk = 1
 			if map_matrix[x][y] == "B":
 				B +=1
-			x += 1 
+			x += 1
 		y += 1
 		count += asterisk + B
 	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
@@ -110,7 +180,7 @@ def find_flowerpiranhas(map_matrix):
 		while x < x_len:
 			if map_matrix[x][y] == "T" and map_matrix[x][y+1] =="T" and map_matrix[x-1][y] == "-" and map_matrix[x-1][y+1] == "-":
 				count += 1
-			x += 1 
+			x += 1
 		y += 1
 	logger.debug(" (RTRN) {}".format(inspect.stack()[0][3]))
 	return count
