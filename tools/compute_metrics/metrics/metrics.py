@@ -2,7 +2,6 @@ from statistics import mean
 import logging, inspect
 import numpy as np
 from sklearn.linear_model import LinearRegression
-import seaborn as seabornInstance
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
@@ -10,10 +9,8 @@ from sklearn.preprocessing import normalize
 logger = logging.getLogger(__name__)
 
 def get_dif_average(y, y_pred):
-
 	dif = np.absolute(y-y_pred)
 	average = np.average(dif)
-
 	return average
 
 def linear_regression(x, y):
@@ -29,7 +26,7 @@ def linear_regression(x, y):
 	y_pred = model.predict(x)
 	return y_pred
 
-def calculate_linearity(map_matrix):
+def compute_linearity(map_matrix):
 	platform_blocks = ["X", "!", '#', 't', "Q", "S", "?", "U"]
 	np.set_printoptions(suppress=True)
 	x = []
@@ -46,7 +43,7 @@ def calculate_linearity(map_matrix):
 
 	y_pred = linear_regression(x, y)
 	average = get_dif_average(y, y_pred)
-	print("Average: {}".format(average))
+	#print("Average: {}".format(average))
 	return average
 
 	# dataset = pd.DataFrame(list(zip(x, y)), columns =['column', 'height'], dtype=np.int64)
@@ -75,7 +72,7 @@ def calculate_linearity(map_matrix):
 	# plt.plot(x, y_pred, color='red', linewidth=2)
 	# plt.show()
 
-def calculate_leniency(map_matrix):
+def compute_leniency(map_matrix):
 	logger.debug(" (CALL) {}".format(inspect.stack()[0][3]))
 
 	enemy_leniency = -1
