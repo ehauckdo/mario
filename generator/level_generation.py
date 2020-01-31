@@ -21,6 +21,7 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 	available_substitutions = generated_structure.get_available_substitutions()
 	count_substitutions = 0
 	logger.info("Starting substitution process...")
+	logger.info("Available subsistutions: {}".format(len(available_substitutions)))
 
 	levels = []
 	while len(available_substitutions) > 0:
@@ -35,6 +36,9 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 			#sim_structure, collides = generated_structure.simulate_expansion(s, c1, c2)
 			#sim_available_substitutions = sim_structure.get_available_substitutions()
 
+			logger.info("Trying to append structure {}".format(s_id))
+			logger.info("\n{}".format(s.pretty_print()))
+
 			adjusted_structure = generated_structure.expand(s, c1, c2)
 			sim_available_substitutions = generated_structure.get_available_substitutions()
 
@@ -42,13 +46,15 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 			collides = False
 			for n in generated_structure.nodes:
 				try:
-					if map_matrix[n.r][n.c] != None: collides = True
+					if map_matrix[n.r][n.c] != None:
+						collides = True
+					else: map_matrix[n.r][n.c] = n.tile
 				except:
 					map_matrix[n.r][n.c] = n.tile
 
 			if len(sim_available_substitutions) <= 0 or collides:
-				#if len(sim_available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
-				#if collides: logger.info("Collision Happened!")
+				if len(sim_available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
+				if collides: logger.info("Collision Happened!")
 				for n in adjusted_structure.nodes:
 					generated_structure.nodes.remove(n)
 				for n in adjusted_structure.connecting:
@@ -56,10 +62,6 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 				c1.edges[0].properties["combined"] = None
 				continue
 
-			# if collides or len(sim_available_substitutions) <= 0:
-			# 	# logger.info("Simulated structure has connecting <= 0 or collides, trying next...")
-			# 	logger.info("Simulated structure collides, trying next...")
-			# 	continue
 			else:
 
 				#generated_structure = sim_structure
@@ -99,6 +101,13 @@ def instantiate_base_level(id_substructures):
 		platform.cluster_id = g_s.id
 		g_s.insert_node(platform)
 
+		for r in range(15):
+			if r == 14 and c == 1: continue
+			air = Node(r, c, "-")
+			air.type = "Non-Solid"
+			air.cluster_id = g_s.id
+			g_s.insert_node(air)
+
 	mario = Node(14, 1, "M")
 	mario.cluster_id = g_s.id
 	g_s.insert_node(mario)
@@ -116,6 +125,12 @@ def instantiate_base_level(id_substructures):
 		platform.type = "Solid"
 		platform.cluster_id = g_f.id
 		g_f.insert_node(platform)
+
+		for r in range(15):
+			air = Node(r, c, "-")
+			air.type = "Non-Solid"
+			air.cluster_id = g_f.id
+			g_f.insert_node(air)
 
 	finish = Node(14, 2, "F")
 	finish.cluster_id = g_f.id
