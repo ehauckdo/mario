@@ -1,5 +1,6 @@
 import logging
 from .substructure import Substructure, Node
+from .sdc import select
 logger = logging.getLogger(__name__)
 
 def pretty_print_graph_map(graph_map, tiles=False):
@@ -27,7 +28,7 @@ def pretty_print_graph_map(graph_map, tiles=False):
 		logger.info(row)
 
 def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
-	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
+	platform_blocks = ["X", "!", '#', 't', "Q", "S", "?", "U"]
 	collisions = []
 	if x_min < 0 or y_min < 0:
 		raise IndexError
@@ -64,7 +65,6 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 	clusters = []
 	finished_clusters = []
 	connecting_nodes = []
-	#moves = {"l":"d", "d":"r", "r":"u", "u":"l"}
 	switcher = {"r":"l", "l":"r", "u":"d", "d":"u"}
 	effects = {"l":(0,-1), "d":(1,0), "r":(0,1), "u":(-1,0)}
 
@@ -77,22 +77,22 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 		cluster_collisions[cluster_id] = {}
 		substructures[cluster_id] = Substructure(cluster_id)
 		logger.debug("Setting core point (id {}) x: {}, y: {}".format(cluster_id, p[0],p[1]))
-		# fields: id, x_min, x_max, y_min, y_max
-		clusters.append([cluster_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u"])
-
+		# fields: id, x_min, x_max, y_min, y_max, move list (to guide expansion), previois move
+		clusters.append([cluster_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u", D])
 		cluster_id += 1
 
 	pretty_print_graph_map(graph_map)
 
-	def failed_expansion():
-		moves[prev_move] = next_move
+	def failed_expansion(next):
+		moves[prev_move] = next
 		move = prev_move
 		r_min_new, r_max_new = r_min, r_max
 		c_min_new, c_max_new = c_min, c_max
-		clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+		clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move, d])
 
 	while len(clusters) > 0:
-		id, r_min, r_max, c_min, c_max, moves, prev_move = clusters.pop(0)
+		id, r_min, r_max, c_min, c_max, moves, prev_move, d = clusters.pop(0)
+		if d > D * 4: continue
 		move = moves[prev_move]
 		logger.info("id: {}, r_min: {}, r_max:{}, c_min:{}, c_max:{}, move: {}".format(id, r_min, r_max, c_min, c_max, move))
 		logger.info("Move list: {}".format(moves))
@@ -112,7 +112,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 				for other_id, r, c in collisions:
 					if other_id not in cluster_collisions[id].keys():
 						#logger.info("id: {}, other_id: {}, r: {}, c: {}".format(id, other_id, r, c))
-						other_r = r - 1 if move == "u" else r + 1 if move == "d" else r
+						other_r = r + 1 if move == "u" else r - 1 if move == "d" else r
 						other_c = c - 1 if move == "r" else c + 1 if move == "l" else c
 						cluster_collisions[id][other_id] = (r, c)
 						cluster_collisions[other_id][id] = (other_r, other_c)
@@ -132,10 +132,10 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 					logger.info("Cluster has finished expansion.")
 					finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
 				else:
-					failed_expansion()
+					failed_expansion(next_move)
 			else:
 				logger.info("No collisions found. Proceeding regular expansion...")
-				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move])
+				clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new, moves, move, d+1])
 
 		except IndexError:
 			logger.info("Accessing invalid index. Reverting expansion")
@@ -144,7 +144,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 				logger.info("Cluster has finished expansion.")
 				finished_clusters.append([id, r_min_new, r_max_new, c_min_new, c_max_new])
 			else:
-				failed_expansion()
+				failed_expansion(next_move)
 
 	logger.info("Clusters at the end of expansions: ")
 	for id, r_min, x_max, c_min, c_max in finished_clusters:
