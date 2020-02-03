@@ -39,8 +39,20 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
 
 	s2_adjusted = copy.deepcopy(s2)
 
+	#s2_adjusted.adjust(s2, n1, n2)
+
 	s2_adjusted.adjust_columns(adjust_col)
 	s2_adjusted.adjust_rows(adjust_row)
+
+	for i in range(len(s2_adjusted.nodes)-1, -1, -1):
+		n = s2_adjusted.nodes[i]
+		if n.r < 0 or n.r > 15 or n.c < 0:
+			s2_adjusted.nodes.remove(n)
+
+	for i in range(len(s2_adjusted.connecting)-1, -1, -1):
+		n = s2_adjusted.connecting[i]
+		if n.r < 0 or n.r > 15 or n.c < 0:
+			s2_adjusted.connecting.remove(n)
 
 	logger.debug("After adjustment: ")
 	logger.debug(s2_adjusted.nodes+s2_adjusted.connecting)
