@@ -1,17 +1,41 @@
-def get_points(map_data, N=3, D=3):
+from .algorithms import sdc
+import random
+import numpy as np
 
-	import random
+def get_non_air(map_data, np_array=True):
+	non_air = np.empty((0,2), int) if np_array else []
+
+	for c in range(map_data.n_cols):
+		for r in range(map_data.n_rows):
+			if map_data.get(r, c) != "-":
+				if np_array:
+					non_air = np.append(non_air, np.array([[r,c]]), axis=0)
+				else:
+					non_air.append((r,c))
+	return non_air
+
+def evenly_spaced_selection(map_data, N=3):
+	selected_points = []
+
+	solids = get_non_air(map_data, np_array=True)
+	mask = sdc.select(solids,
+	                  image_shape=(map_data.n_rows, map_data.n_cols),
+	                  count=N)
+
+	for i in range(len(mask)):
+		if mask[i]:
+			r, c = solids[i]
+			selected_points.append([r,c])
+
+	return selected_points
+
+def spaced_selection(map_data, N=3, D=3):
 	r = random.randint(0, map_data.n_rows)
 	c = random.randint(0, map_data.n_cols)
 
 	# store tiles r, c indexes, and probabilities for each
-	pop = []
+	pop =  get_non_air(map_data, np_array=False)
 	pop_d = []
-
-	for r in range(map_data.n_rows):
-		for c in range(map_data.n_cols):
-			if map_data.get(r, c) != "-":
-				pop.append((r,c))
 
 	for i in range(len(pop)):
 		pop_d.append(1/len(pop))

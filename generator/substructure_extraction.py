@@ -1,7 +1,7 @@
 import logging
 from .level import Level
-from .point_selection import get_points
-from .substructure_selection import get_substructures, get_substructures_rect
+from .point_selection import spaced_selection, evenly_spaced_selection
+from .substructure_selection import get_substructures_diamond, get_substructures_rect
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,8 @@ def extract_structures(path_to_map, n, d, s):
 	# Step 1
 	# Select N points from the map, with D distance from each other
 	min_dist = 4
-	selected_points = get_points(map_data, n, min_dist)
+	selected_points = evenly_spaced_selection(map_data, n)
+	selected_points = spaced_selection(map_data, n, min_dist)
 	logger.info("Selected points ({}): {}".format(n, selected_points))
 
 	# Step 2

@@ -1,6 +1,5 @@
 import logging
 from .substructure import Substructure, Node
-from .sdc import select
 logger = logging.getLogger(__name__)
 
 def pretty_print_graph_map(graph_map, tiles=False):
@@ -198,7 +197,7 @@ def generate_substructures(graph_map, connecting_nodes):
 	return list(substructures.values())
 
 
-def get_substructures(map_data, points, D=5, S=2):
+def get_substructures_diamond(map_data, points, D=5, S=2):
 
 	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 
