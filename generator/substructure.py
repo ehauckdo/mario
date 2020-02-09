@@ -4,28 +4,6 @@ import copy
 from .level import Level
 logger = logging.getLogger(__name__)
 
-# class Node:
-#
-# 	def __init__(self):
-# 		pass
-#
-# 	def __init__(self, r, c, tile=None, c_id=0, d=0, s=0, t="P"):
-# 		self.r = r
-# 		self.c = c
-# 		self.tile = tile
-# 		self.type = t
-# 		self.edges = []
-# 		self.substructure_id = c_id
-# 		self.d = d # distance from core node
-# 		self.s = s # similarity measure
-#
-# 	def __repr__(self):
-# 		return "({},{})".format(self.r, self.c)
-#
-# 	def add_edge(self, n2, properties):
-# 		edge = Edge(self, n2, properties)
-# 		self.edges.append(edge)
-
 class Edge:
 	def __init__(self):
 		pass
@@ -39,7 +17,7 @@ class Edge:
 		return "{} :{}".format(self.n2,self.properties)
 
 class Connector:
-	def __init__(self, r, c, direction, substruture_id=0):
+	def __init__(self, r, c, direction, substructure_id=0):
 		self.r = r
 		self.c = c
 		self.direction = direction
@@ -69,12 +47,6 @@ class Substructure:
 		self.id = substructure_id
 		self.nodes = []
 		self.connecting = []
-
-	def insert_node(self, n):
-		if n.type != "Connecting":
-			self.nodes.append(n)
-		else:
-			self.connecting.append(n)
 
 	def relativize_coordinates(self):
 		"""Shift all nodes so the left-most node has column==0"""
@@ -189,12 +161,12 @@ class Substructure:
 		return s2_adjusted, collides, sim_available_substitutions
 
 	def get_available_substitutions(self):
-		substituions = []
+		substitutions = []
 		for n in self.connecting:
-			if n.edges[0].properties["combined"] == None:
-				for s_id, n2 in n.edges[0].properties["combinable"]:
-					substituions.append((n, s_id, n2))
-		return substituions
+			if n.combined == None:
+				for s_id, n2 in n.combinable:
+					substitutions.append((n, s_id, n2))
+		return substitutions
 
 	def adjust_columns(self, adjust):
 		for n in self.nodes+self.connecting:
@@ -214,7 +186,7 @@ class Substructure:
 			generated.set(n.r, n.c, n.tile)
 		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
 		for n in self.connecting:
-			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
+			generated.set(n.r, n.c, directions[n.direction])
 
 		return generated.matrix_representation()
 
@@ -238,7 +210,7 @@ class Substructure:
 		for n in self.nodes:
 			level[n.r][n.c] = n.tile
 		for n in self.connecting:
-			level[n.r][n.c] = directions[n.edges[0].properties["direction"]]
+			level[n.r][n.c] = directions[n.direction]
 
 		# 5: return the matrix, to be used in render_level
 		return level
@@ -255,38 +227,6 @@ class Substructure:
 			full_string += row_str + "\n"
 
 		return full_string
-
-		# generated = Level()
-		#
-		# for n in self.nodes:
-		# 	# print("Inserting node: {},{}".format(n.r, n.c))
-		#
-		# 	generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
-		# directions = {"r":">", "l":"<", "u":"^", "d":"v"}
-		# for n in self.connecting:
-		# 	generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
-		#
-		# return generated.pretty_print()
-
-	def pretty_print_nodes(self, symbols=True):
-		generated = Level()
-		directions = {"r":">", "l":"<", "u":"^", "d":"v"}
-
-		for n in self.nodes:
-			# print("Inserting node: {},{}".format(n.r, n.c))
-			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
-		for n in self.connecting:
-			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
-
-		# horrible, horrible hack
-		for i in range(len(generated.map_data)):
-				generated.map_data[i] = " "
-		for n in self.nodes:
-			generated.set(n.r, n.c, n.tile if symbols==True else (self.id if n.d != 0 else "#"))
-		for n in self.connecting:
-			generated.set(n.r, n.c, directions[n.edges[0].properties["direction"]])
-
-		return generated.pretty_print()
 
 	def save_as_level(self, level_filename="output.txt"):
 		generated = Level()

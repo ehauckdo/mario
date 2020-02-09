@@ -1,5 +1,5 @@
 import logging
-from .substructure import Substructure, Node
+from .substructure import Substructure, Node, Connector
 logger = logging.getLogger(__name__)
 
 def pretty_print_graph_map(graph_map, tiles=False):
@@ -118,13 +118,10 @@ def get_substructures(map_data, points, D=5, S=2):
 						logger.info("Expanding Structure structure {}, r {}, c {}".format(id, other_r, other_c))
 						logger.info("Collided structure {}, r {}, c {}".format(other_id, r, c))
 
-						# create connecting nodes here with the appropriate coordinates
-						node_1 = Node(r, c, "*", "Connecting", id)
-						node_2 = Node(other_r, other_c, "*", "Connecting", other_id)
-						node_1.add_edge(node_2, {"direction":move, "combined":None, "combinable":[]})
-						node_2.add_edge(node_1, {"direction":switcher[move], "combined":None, "combinable":[]})
-						connecting_nodes.append(node_1)
-						connecting_nodes.append(node_2)
+						connector_1 = Connector(r, c, move, id)
+						connector_2 = Connector(other_r, other_c, switcher[move], other_id)
+						connecting_nodes.append(connector_1)
+						connecting_nodes.append(connector_2)
 
 				next_move = moves[move]
 				if move == next_move:
@@ -152,7 +149,7 @@ def get_substructures(map_data, points, D=5, S=2):
 	logger.info("Connecting nodes: ")
 	for c in connecting_nodes:
 		logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure_id, c.r, c.c))
-		logger.info(c.edges)
+		#logger.info(c.edges)
 
 	substructures = generate_substructures(graph_map, connecting_nodes)
 
@@ -189,9 +186,9 @@ def generate_substructures(graph_map, connecting_nodes):
 				if n.substructure_id not in substructures.keys():
 					substructures[n.substructure_id] = Substructure(n.substructure_id)
 
-				substructures[n.substructure_id].insert_node(n)
+				substructures[n.substructure_id].nodes.append(n)
 
 	for connecting in connecting_nodes:
-		substructures[connecting.substructure_id].insert_node(connecting)
+		substructures[connecting.substructure_id].connecting.append(connecting)
 
 	return list(substructures.values())

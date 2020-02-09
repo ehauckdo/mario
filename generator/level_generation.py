@@ -1,6 +1,6 @@
 import logging
 import random
-from .substructure import Substructure, Node
+from .substructure import Substructure, Node, Connector
 
 logger = logging.getLogger(__name__)
 
@@ -138,19 +138,18 @@ def instantiate_base_level(id_substructures):
 
 	for c in range(3):
 		platform = Node(15, c, "X", "Solid", g_s.id)
-		g_s.insert_node(platform)
+		g_s.nodes.append(platform)
 
 		for r in range(15):
 			if r == 14 and c == 1: continue
 			air = Node(r, c, "-", "Non-Solid", g_s.id)
-			g_s.insert_node(air)
+			g_s.nodes.append(air)
 
 	mario = Node(14, 1, "M", "Solid", g_s.id)
-	g_s.insert_node(mario)
+	g_s.nodes.append(mario)
 
-	connecting = Node(15, 3, "*", "Connecting", g_s.id)
-	connecting.add_edge(connecting, {"direction":"r", "combined":None, "combinable":[]})
-	g_s.insert_node(connecting)
+	connector = Connector(15, 3, "r", g_s.id)
+	g_s.connecting.append(connector)
 
 	id_substructures += 1
 
@@ -158,17 +157,16 @@ def instantiate_base_level(id_substructures):
 
 	for c in range(1, 3):
 		platform = Node(15, c, "X", "Solid", g_f.id)
-		g_f.insert_node(platform)
+		g_f.nodes.append(platform)
 
 		for r in range(15):
 			air = Node(r, c, "-", "Non-Solid", g_f.id)
-			g_f.insert_node(air)
+			g_f.nodes.append(air)
 
 	finish = Node(14, 2, "F", "Solid", g_f.id)
-	g_f.insert_node(finish)
+	g_f.nodes.append(finish)
 
-	connecting = Node(15, 0, "*", "Connecting", g_f.id)
-	connecting.add_edge(connecting, {"direction":"l", "combined":None, "combinable":[]})
-	g_f.insert_node(connecting)
+	connector = Connector(15, 0, "l", g_f.id)
+	g_f.connecting.append(connector)
 
 	return g_s, g_f
