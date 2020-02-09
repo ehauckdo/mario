@@ -4,27 +4,27 @@ import copy
 from .level import Level
 logger = logging.getLogger(__name__)
 
-class Node:
-
-	def __init__(self):
-		pass
-
-	def __init__(self, r, c, tile=None, c_id=0, d=0, s=0, t="P"):
-		self.r = r
-		self.c = c
-		self.tile = tile
-		self.type = t
-		self.edges = []
-		self.cluster_id = c_id
-		self.d = d # distance from core node
-		self.s = s # similarity measure
-
-	def __repr__(self):
-		return "({},{})".format(self.r, self.c)
-
-	def add_edge(self, n2, properties):
-		edge = Edge(self, n2, properties)
-		self.edges.append(edge)
+# class Node:
+#
+# 	def __init__(self):
+# 		pass
+#
+# 	def __init__(self, r, c, tile=None, c_id=0, d=0, s=0, t="P"):
+# 		self.r = r
+# 		self.c = c
+# 		self.tile = tile
+# 		self.type = t
+# 		self.edges = []
+# 		self.substructure_id = c_id
+# 		self.d = d # distance from core node
+# 		self.s = s # similarity measure
+#
+# 	def __repr__(self):
+# 		return "({},{})".format(self.r, self.c)
+#
+# 	def add_edge(self, n2, properties):
+# 		edge = Edge(self, n2, properties)
+# 		self.edges.append(edge)
 
 class Edge:
 	def __init__(self):
@@ -38,6 +38,30 @@ class Edge:
 	def __repr__(self):
 		return "{} :{}".format(self.n2,self.properties)
 
+class Connector:
+	def __init__(self, r, c, direction, substruture_id=0):
+		self.r = r
+		self.c = c
+		self.direction = direction
+		self.combined = None
+		self.combinable = []
+		self.substructure_id = substructure_id
+
+class Node:
+	def __init__(self, r, c, tile="-", type="Non-Solid", substructure_id=0):
+		self.r = r
+		self.c = c
+		self.tile = tile
+		self.type = type
+		self.substructure_id = substructure_id
+		self.edges = []
+
+	def __repr__(self):
+		return "({},{})".format(self.r, self.c)
+
+	def add_edge(self, n2, properties):
+		edge = Edge(self, n2, properties)
+		self.edges.append(edge)
 
 class Substructure:
 
@@ -81,8 +105,8 @@ class Substructure:
 		for c in s2_adjusted.connecting:
 			if c.r == c2.r and c.c == c2.c:
 			#if c == c2:
-				logger.info("S1: {}, c1: {}".format(c1.cluster_id, c1))
-				logger.info("S2: {}, c2: {}".format(c2.cluster_id, c2))
+				logger.info("S1: {}, c1: {}".format(c1.substructure_id, c1))
+				logger.info("S2: {}, c2: {}".format(c2.substructure_id, c2))
 
 				logger.info("S1 combinables BEFORE: ")
 				logger.info(c1.edges[0].properties["combinable"])
@@ -95,10 +119,10 @@ class Substructure:
 				logger.info(c.edges[0].properties["combinable"])
 				c.edges[0].properties["combined"] = [s1, c1]
 				for c_id, connecting in c.edges[0].properties["combinable"]:
-					if c_id == c1.cluster_id and connecting.r == c1.r and connecting.c == c1.c:
+					if c_id == c1.substructure_id and connecting.r == c1.r and connecting.c == c1.c:
 						c.edges[0].properties["combinable"].remove((c_id, connecting))
 
-				#c.edges[0].properties["combinable"].remove((c1.cluster_id, c1))
+				#c.edges[0].properties["combinable"].remove((c1.substructure_id, c1))
 				logger.info("S2 combinables AFTER: ")
 				logger.info(c.edges[0].properties["combinable"])
 
