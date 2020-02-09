@@ -53,7 +53,7 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 	return collisions
 
 
-def get_substructures_rect(map_data, points, D=5, S=2):
+def get_substructures(map_data, points, D=5, S=2):
 	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
