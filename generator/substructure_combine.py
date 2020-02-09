@@ -73,7 +73,6 @@ def find_substructures_combinations(substructures):
 		connecting_nodes.extend(s.connecting)
 
 	# go through all substructures checking connecting nodes
-
 	for s1 in substructures:
 	#for index1 in range(len(substructures)-1):
 		#s1 = substructures[index1]
@@ -109,8 +108,6 @@ def find_substructures_combinations(substructures):
 								logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
 								n1.edges[0].properties["combinable"].append((s2.id, n2))
 								n2.edges[0].properties["combinable"].append((s1.id, n1))
-								s1.combinable.append((s2,n2))
-								s2.combinable.append((s1,n1))
 							else:
 								logger.debug("--- Not combinable")
 

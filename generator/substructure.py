@@ -45,7 +45,6 @@ class Substructure:
 		self.id = substructure_id
 		self.nodes = []
 		self.connecting = []
-		self.combinable = []
 
 	def insert_node(self, n):
 		if n.type != "Connecting":
@@ -53,9 +52,21 @@ class Substructure:
 		else:
 			self.connecting.append(n)
 
+	def relativize_coordinates(self):
+		"""Shift all nodes so the left-most node has column==0"""
+		if len(self.nodes) + len(self.connecting) < 1:
+			return
+		smallest_c = (self.nodes+self.connecting)[0].c
+		for node in self.nodes+self.connecting:
+			if node.c < smallest_c:
+				smallest_c = node.c
+		for node in self.nodes+self.connecting:
+			node.c = node.c - smallest_c
+
 	def adjust(self, s2, c1, c2):
 		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
 		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
+		s1 = self
 
 		n1_direction = c1.edges[0].properties["direction"]
 		n2_direction = c2.edges[0].properties["direction"]
@@ -65,10 +76,55 @@ class Substructure:
 
 		s2_adjusted = copy.deepcopy(s2)
 
+		# c1.edges[0].properties["combinable"].remove((s2.id, c2))
+
 		for c in s2_adjusted.connecting:
 			if c.r == c2.r and c.c == c2.c:
+			#if c == c2:
+				logger.info("S1: {}, c1: {}".format(c1.cluster_id, c1))
+				logger.info("S2: {}, c2: {}".format(c2.cluster_id, c2))
+
+				logger.info("S1 combinables BEFORE: ")
+				logger.info(c1.edges[0].properties["combinable"])
 				c1.edges[0].properties["combined"] = [s2_adjusted, c]
-				c.edges[0].properties["combined"] = [self, c1]
+				c1.edges[0].properties["combinable"].remove((s2.id, c2))
+				logger.info("S1 combinables AFTER: ")
+				logger.info(c1.edges[0].properties["combinable"])
+
+				logger.info("S2 combinables BEFORE: ")
+				logger.info(c.edges[0].properties["combinable"])
+				c.edges[0].properties["combined"] = [s1, c1]
+				for c_id, connecting in c.edges[0].properties["combinable"]:
+					if c_id == c1.cluster_id and connecting.r == c1.r and connecting.c == c1.c:
+						c.edges[0].properties["combinable"].remove((c_id, connecting))
+
+				#c.edges[0].properties["combinable"].remove((c1.cluster_id, c1))
+				logger.info("S2 combinables AFTER: ")
+				logger.info(c.edges[0].properties["combinable"])
+
+				logger.info("Removing c1 from s1 ({}, {}) from s2".format(s1.id,c1))
+				logger.info("Removing c2 from s2 ({}, {}) from s1".format(s2.id,c))
+
+				# for combinable in c.edges[0].properties["combinable"]:
+				# 	logger.info("Comparing ({}, {}) against {}:".format(s1.id,c1, combinable))
+				#
+				# 	if s1.id == combinable[0]:
+				# 		logger.info("Id Equal")
+				# 	else:
+				# 		logger.info("Id Not Equal")
+				# 	if c1 == combinable[1]:
+				# 		logger.info("C Equal")
+				# 	else:
+				# 		logger.info("C Not Equal")
+				# 		logger.info("Edges c1:")
+				# 		for key in c1.edges[0].properties.keys():
+				# 			logger.info("Key: {}, Value: {}".format(key, c1.edges[0].properties[key]))
+				# 		logger.info("Edges combinable[1]:{}")
+				# 		for key in combinable[1].edges[0].properties.keys():
+				# 			logger.info("Key: {}, Value: {}".format(key, combinable[1].edges[0].properties[key]))
+				#
+				# c.edges[0].properties["combinable"].remove((s1.id,c1))
+				# c1.edges[0].properties["combinable"].remove((s2.id,c))
 				break
 
 		s2_adjusted.adjust_columns(adjust_column)
@@ -84,45 +140,9 @@ class Substructure:
 			if n.r < 0 or n.r > 15 or n.c < 0:
 				s2_adjusted.connecting.remove(n)
 
-		return s2_adjusted
 
-	def collides(self, s2, c1, c2):
-		# logger.debug("Checking collision between structures: ")
-		map_matrix = [{} for i in range(16)]
 
-		s2_adjusted = copy.deepcopy(s2)
-
-		horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
-		vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
-
-		n1_direction = c1.edges[0].properties["direction"]
-		n2_direction = c2.edges[0].properties["direction"]
-
-		# logger.debug("Connecting (s1) n1: {}, direction: {}".format(c1, n1_direction))
-		# logger.debug("Connecting (s2) n2: {}, direction: {}".format(c2, n2_direction))
-
-		adjust_column = (c1.c + (horizontal[n1_direction])) - c2.c
-		adjust_row = (c1.r + (vertical[n2_direction])) - c2.r
-
-		s2_adjusted.adjust_columns(adjust_column)
-		s2_adjusted.adjust_rows(adjust_row)
-
-		for n in s2_adjusted.nodes:
-			#logger.debug(n)
-			try:
-				map_matrix[n.r][n.c] = n.tile
-			except:
-				# out of bounds, we can ignore
-				pass
-
-		for n in self.nodes:
-			try:
-				if map_matrix[n.r][n.c] != None:
-					return True
-			except:
-				pass
-
-		return False
+		return s2_adjusted#, collides
 
 	def expand(self, s2, c1, c2):
 		#logger.info("Connecting structure {} with {} by using connecting nodes {} and {}".format(self.id, s2.id, c1, c2))
@@ -132,33 +152,17 @@ class Substructure:
 		self.nodes.extend(s2_adjusted.nodes)
 		self.connecting.extend(s2_adjusted.connecting)
 
-		return s2_adjusted
+		collides = False
+		level_matrix = {}
+		for n in self.nodes:
+			if (n.r, n.c) not in level_matrix.keys():
+				level_matrix[(n.r,n.c)] = n.tile
+			else:
+				collides = True
 
-	def simulate_adjust_columns(self, adjust):
-		for index in range(len(self.nodes)-1, -1, -1):
-			n = self.nodes[index]
-			n.c += adjust
-			if n.c < 0:
-				self.nodes.remove(n)
+		sim_available_substitutions = self.get_available_substitutions()
 
-		for index in range(len(self.connecting)-1, -1, -1):
-			n = self.connecting[index]
-			n.c += adjust
-			if n.c < 0:
-				self.connecting.remove(n)
-
-	def simulate_adjust_rows(self, adjust):
-		for index in range(len(self.nodes)-1, -1, -1):
-			n = self.nodes[index]
-			n.r += adjust
-			if n.r < 0 or n.r > 15:
-				self.nodes.remove(n)
-
-		for index in range(len(self.connecting)-1, -1, -1):
-			n = self.connecting[index]
-			n.r += adjust
-			if n.r < 0 or n.r > 15:
-				self.connecting.remove(n)
+		return s2_adjusted, collides, sim_available_substitutions
 
 	def get_available_substitutions(self):
 		substituions = []
@@ -175,20 +179,6 @@ class Substructure:
 	def adjust_rows(self, adjust):
 		for n in self.nodes+self.connecting:
 			n.r += adjust
-
-	def relativize_coordinates(self):
-
-		if len(self.nodes) + len(self.connecting) < 1:
-			return
-
-		smallest_c = (self.nodes+self.connecting)[0].c
-
-		for node in self.nodes+self.connecting:
-			if node.c < smallest_c:
-				smallest_c = node.c
-
-		for node in self.nodes+self.connecting:
-			node.c = node.c - smallest_c
 
 	def __repr__(self):
 		return "ID: {}\n Nodes: {}\n Connecting Nodes: {}".format(self.id,self.nodes, self.connecting)
