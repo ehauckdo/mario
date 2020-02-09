@@ -149,7 +149,7 @@ def instantiate_base_level(id_substructures):
 	g_s.nodes.append(mario)
 
 	connector = Connector(15, 3, "r", g_s.id)
-	g_s.connecting.append(connector)
+	g_s.append_connector(connector)
 
 	id_substructures += 1
 
@@ -167,6 +167,6 @@ def instantiate_base_level(id_substructures):
 	g_f.nodes.append(finish)
 
 	connector = Connector(15, 0, "l", g_f.id)
-	g_f.connecting.append(connector)
+	g_f.append_connector(connector)
 
 	return g_s, g_f

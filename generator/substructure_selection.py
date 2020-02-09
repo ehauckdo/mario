@@ -189,6 +189,6 @@ def generate_substructures(graph_map, connecting_nodes):
 				substructures[n.substructure_id].nodes.append(n)
 
 	for connecting in connecting_nodes:
-		substructures[connecting.substructure_id].connecting.append(connecting)
+		substructures[connecting.substructure_id].append_connector(connecting)
 
 	return list(substructures.values())

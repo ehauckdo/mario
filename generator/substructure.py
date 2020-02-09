@@ -25,6 +25,9 @@ class Connector:
 		self.combinable = []
 		self.substructure_id = substructure_id
 
+	def __repr__(self):
+		return "(sub_id:{}, ({},{}))".format(self.sub_id, self.r, self.c)
+
 class Node:
 	def __init__(self, r, c, tile="-", type="Non-Solid", substructure_id=0):
 		self.r = r
@@ -45,8 +48,14 @@ class Substructure:
 
 	def __init__(self, substructure_id):
 		self.id = substructure_id
+		self.sub_id = 0 # sub_id for connectors
 		self.nodes = []
 		self.connecting = []
+
+	def append_connector(self,c):
+		c.sub_id = self.sub_id
+		self.sub_id += 1
+		self.connecting.append(c)
 
 	def relativize_coordinates(self):
 		"""Shift all nodes so the left-most node has column==0"""
