@@ -59,7 +59,10 @@ def prepare(structure1, c1, structure2, c2):
 	c2.combined = [structure1, c1]
 
 	c1.combinable.remove((structure2.id, c2.sub_id))
-	c2.combinable.remove((structure1.id, c1.sub_id))
+	try:
+		c2.combinable.remove((structure1.id, c1.sub_id))
+	except:
+		pass
 
 	for n in structure2.nodes+structure2.connecting:
 		n.c += adjust_column
@@ -174,7 +177,7 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 					if has_collision(generated_structures+[str2]):
 						continue
 					else:
-						sys.exit()
+						break
 
 	generated_structure = Substructure(-1)
 	for s in generated_structures:

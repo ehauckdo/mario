@@ -27,10 +27,9 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
 
 	s2_adjusted = copy.deepcopy(s2)
 
-	#s2_adjusted.adjust(s2, n1, n2)
-
-	s2_adjusted.adjust_columns(adjust_col)
-	s2_adjusted.adjust_rows(adjust_row)
+	for n in s2_adjusted.nodes+s2_adjusted.connecting:
+		n.c += adjust_col
+		n.r += adjust_row
 
 	for i in range(len(s2_adjusted.nodes)-1, -1, -1):
 		n = s2_adjusted.nodes[i]
