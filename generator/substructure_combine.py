@@ -94,8 +94,8 @@ def find_substructures_combinations(substructures):
 
 							if combinable:
 								logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
-								n1.combinable.append((s2.id, n2))
-								n2.combinable.append((s1.id, n1))
+								n1.combinable.append((s2.id, n2.sub_id))
+								n2.combinable.append((s1.id, n1.sub_id))
 							else:
 								logger.debug("--- Not combinable")
 

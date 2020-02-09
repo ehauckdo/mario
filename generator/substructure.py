@@ -17,24 +17,24 @@ class Edge:
 		return "{} :{}".format(self.n2,self.properties)
 
 class Connector:
-	def __init__(self, r, c, direction, substructure_id=0):
+	def __init__(self, r, c, direction, substructure=None):
 		self.r = r
 		self.c = c
 		self.direction = direction
 		self.combined = None
 		self.combinable = []
-		self.substructure_id = substructure_id
+		self.substructure = substructure
 
 	def __repr__(self):
 		return "(sub_id:{}, ({},{}))".format(self.sub_id, self.r, self.c)
 
 class Node:
-	def __init__(self, r, c, tile="-", type="Non-Solid", substructure_id=0):
+	def __init__(self, r, c, tile="-", type="Non-Solid", substructure=None):
 		self.r = r
 		self.c = c
 		self.tile = tile
 		self.type = type
-		self.substructure_id = substructure_id
+		self.substructure = substructure
 		self.edges = []
 
 	def __repr__(self):
@@ -56,6 +56,13 @@ class Substructure:
 		c.sub_id = self.sub_id
 		self.sub_id += 1
 		self.connecting.append(c)
+
+	def get_connector(self,sub_id):
+		logger.info("Trying to get sub_id: {}".format(sub_id))
+		for c in self.connecting:
+			logger.info("Checking: {}".format(c.sub_id))
+			if c.sub_id == sub_id:
+				return c
 
 	def relativize_coordinates(self):
 		"""Shift all nodes so the left-most node has column==0"""
@@ -86,8 +93,8 @@ class Substructure:
 		for c in s2_adjusted.connecting:
 			if c.r == c2.r and c.c == c2.c:
 			#if c == c2:
-				logger.info("S1: {}, c1: {}".format(c1.substructure_id, c1))
-				logger.info("S2: {}, c2: {}".format(c2.substructure_id, c2))
+				logger.info("S1: {}, c1: {}".format(c1.substructure.id, c1))
+				logger.info("S2: {}, c2: {}".format(c2.substructure.id, c2))
 
 				logger.info("S1 combinables BEFORE: ")
 				logger.info(c1.edges[0].properties["combinable"])
@@ -100,10 +107,10 @@ class Substructure:
 				logger.info(c.edges[0].properties["combinable"])
 				c.edges[0].properties["combined"] = [s1, c1]
 				for c_id, connecting in c.edges[0].properties["combinable"]:
-					if c_id == c1.substructure_id and connecting.r == c1.r and connecting.c == c1.c:
+					if c_id == c1.substructure.id and connecting.r == c1.r and connecting.c == c1.c:
 						c.edges[0].properties["combinable"].remove((c_id, connecting))
 
-				#c.edges[0].properties["combinable"].remove((c1.substructure_id, c1))
+				#c.edges[0].properties["combinable"].remove((c1.substructure.id, c1))
 				logger.info("S2 combinables AFTER: ")
 				logger.info(c.edges[0].properties["combinable"])
 
@@ -174,7 +181,7 @@ class Substructure:
 		for n in self.connecting:
 			if n.combined == None:
 				for s_id, n2 in n.combinable:
-					substitutions.append((n, s_id, n2))
+					substitutions.append((self, n, s_id, n2))
 		return substitutions
 
 	def adjust_columns(self, adjust):

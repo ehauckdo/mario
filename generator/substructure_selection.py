@@ -13,7 +13,8 @@ def pretty_print_graph_map(graph_map, tiles=False):
 		for g in graph_map:
 			for v in g:
 				if v == None: row += " "
-				else: row += "{}".format(v.tile)
+				#else: row += "{}".format(v.tile)
+				else: row += "{}".format(v[0])
 			row += "\n"
 		logger.info(row)
 
@@ -22,7 +23,8 @@ def pretty_print_graph_map(graph_map, tiles=False):
 		for g in graph_map:
 			for v in g:
 				if v == None: row += " "
-				else: row += "{}".format(string.ascii_lowercase[v.substructure_id%size])
+				#else: row += "{}".format(string.ascii_lowercase[v.substructure.id%size])
+				else: row += "{}".format(string.ascii_lowercase[v[1]%size])
 			row += "\n"
 		logger.info(row)
 
@@ -33,9 +35,12 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 		raise IndexError
 	for x in range(x_min, x_max+1):
 		for y in range(y_min, y_max+1):
-			if graph_map[x][y] != None and graph_map[x][y].substructure_id != id:
-				logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].substructure_id))
-				collisions.append([graph_map[x][y].substructure_id,x, y])
+			#if graph_map[x][y] != None and graph_map[x][y].substructure.id != id:
+			if graph_map[x][y] != None and graph_map[x][y][1] != id:
+				#logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].substructure.id))
+				logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y][1]))
+				#collisions.append([graph_map[x][y].substructure.id,x, y])
+				collisions.append([graph_map[x][y][1],x, y])
 
 	if len(collisions) == 0:
 		for x in range(x_min, x_max+1):
@@ -43,7 +48,8 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 				if graph_map[x][y] == None:
 					#graph_map[x][y] = id
 					tile = map_data.get(x, y)
-					graph_map[x][y] = Node(x, y, tile, "Solid" if tile in platform_blocks else "Non-Solid", id)
+					#graph_map[x][y] = Node(x, y, tile, "Solid" if tile in platform_blocks else "Non-Solid", id)
+					graph_map[x][y] = (tile, id)
 
 	# remove duplicates from list
 	if len(collisions) > 0:
@@ -70,7 +76,8 @@ def get_substructures(map_data, points, D=5, S=2):
 	for p in points:
 		# set id of cluster in graph map
 		tile = map_data.get(p[0], p[1])
-		graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, "Solid" if tile in platform_blocks else "Non-Solid", substructure_id)
+		#graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, "Solid" if tile in platform_blocks else "Non-Solid", substructure_id)
+		graph_map[p[0]][p[1]] = (tile, substructure_id)
 
 		# initialize an empty list to save collisions of this cluster
 		cluster_collisions[substructure_id] = {}
@@ -118,10 +125,12 @@ def get_substructures(map_data, points, D=5, S=2):
 						logger.info("Expanding Structure structure {}, r {}, c {}".format(id, other_r, other_c))
 						logger.info("Collided structure {}, r {}, c {}".format(other_id, r, c))
 
-						connector_1 = Connector(r, c, move, id)
-						connector_2 = Connector(other_r, other_c, switcher[move], other_id)
-						connecting_nodes.append(connector_1)
-						connecting_nodes.append(connector_2)
+						# connector_1 = Connector(r, c, move, id)
+						# connector_2 = Connector(other_r, other_c, switcher[move], other_id)
+						# connecting_nodes.append(connector_1)
+						# connecting_nodes.append(connector_2)
+						connecting_nodes.append([r, c, move, id])
+						connecting_nodes.append([other_r, other_c, switcher[move], other_id])
 
 				next_move = moves[move]
 				if move == next_move:
@@ -148,7 +157,8 @@ def get_substructures(map_data, points, D=5, S=2):
 
 	logger.info("Connecting nodes: ")
 	for c in connecting_nodes:
-		logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure_id, c.r, c.c))
+		#logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure.id, c.r, c.c))
+		logger.info("Node: {}".format(c))
 		#logger.info(c.edges)
 
 	substructures = generate_substructures(graph_map, connecting_nodes)
@@ -176,6 +186,7 @@ def append_adjacent_edges(graph_map):
 					pass
 
 def generate_substructures(graph_map, connecting_nodes):
+	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	substructures = {}
 
 	for r in range(len(graph_map)):
@@ -183,12 +194,20 @@ def generate_substructures(graph_map, connecting_nodes):
 			n = graph_map[r][c]
 
 			if n != None:
-				if n.substructure_id not in substructures.keys():
-					substructures[n.substructure_id] = Substructure(n.substructure_id)
+				#if n.substructure.id not in substructures.keys():
+				if n[1] not in substructures.keys():
+					#substructures[n.substructure.id] = Substructure(n.substructure.id)
+					substructures[n[1]] = Substructure(n[1])
 
-				substructures[n.substructure_id].nodes.append(n)
+				node = Node(r, c, n[0], "Solid" if n[0] in platform_blocks else "Non-Solid", substructures[n[1]])
+				#substructures[n.substructure.id].nodes.append(n)
+				substructures[n[1]].nodes.append(node)
 
-	for connecting in connecting_nodes:
-		substructures[connecting.substructure_id].append_connector(connecting)
+	#for connecting in connecting_nodes:
+	#	substructures[connecting.substructure.id].append_connector(connecting)
+	for r, c, direction, id in connecting_nodes:
+		connector = Connector(r, c, direction, substructures[id])
+		substructures[id].append_connector(connector)
+
 
 	return list(substructures.values())
