@@ -39,8 +39,20 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
 
 	s2_adjusted = copy.deepcopy(s2)
 
+	#s2_adjusted.adjust(s2, n1, n2)
+
 	s2_adjusted.adjust_columns(adjust_col)
 	s2_adjusted.adjust_rows(adjust_row)
+
+	for i in range(len(s2_adjusted.nodes)-1, -1, -1):
+		n = s2_adjusted.nodes[i]
+		if n.r < 0 or n.r > 15 or n.c < 0:
+			s2_adjusted.nodes.remove(n)
+
+	for i in range(len(s2_adjusted.connecting)-1, -1, -1):
+		n = s2_adjusted.connecting[i]
+		if n.r < 0 or n.r > 15 or n.c < 0:
+			s2_adjusted.connecting.remove(n)
 
 	logger.debug("After adjustment: ")
 	logger.debug(s2_adjusted.nodes+s2_adjusted.connecting)
@@ -61,7 +73,6 @@ def find_substructures_combinations(substructures):
 		connecting_nodes.extend(s.connecting)
 
 	# go through all substructures checking connecting nodes
-
 	for s1 in substructures:
 	#for index1 in range(len(substructures)-1):
 		#s1 = substructures[index1]
@@ -97,8 +108,6 @@ def find_substructures_combinations(substructures):
 								logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
 								n1.edges[0].properties["combinable"].append((s2.id, n2))
 								n2.edges[0].properties["combinable"].append((s1.id, n1))
-								s1.combinable.append((s2,n2))
-								s2.combinable.append((s1,n1))
 							else:
 								logger.debug("--- Not combinable")
 
