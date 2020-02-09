@@ -22,7 +22,7 @@ def pretty_print_graph_map(graph_map, tiles=False):
 		for g in graph_map:
 			for v in g:
 				if v == None: row += " "
-				else: row += "{}".format(string.ascii_lowercase[v.cluster_id%size])
+				else: row += "{}".format(string.ascii_lowercase[v.substructure_id%size])
 			row += "\n"
 		logger.info(row)
 
@@ -33,9 +33,9 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 		raise IndexError
 	for x in range(x_min, x_max+1):
 		for y in range(y_min, y_max+1):
-			if graph_map[x][y] != None and graph_map[x][y].cluster_id != id:
-				logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].cluster_id))
-				collisions.append([graph_map[x][y].cluster_id,x, y])
+			if graph_map[x][y] != None and graph_map[x][y].substructure_id != id:
+				logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].substructure_id))
+				collisions.append([graph_map[x][y].substructure_id,x, y])
 
 	if len(collisions) == 0:
 		for x in range(x_min, x_max+1):
@@ -59,7 +59,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 
 	substructures = {}
 	cluster_collisions = {}
-	cluster_id = 1
+	substructure_id = 1
 
 	clusters = []
 	finished_clusters = []
@@ -70,15 +70,15 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 	for p in points:
 		# set id of cluster in graph map
 		tile = map_data.get(p[0], p[1])
-		graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, cluster_id, 0, 0, "Solid" if tile in platform_blocks else "Non-Solid")
+		graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, substructure_id, 0, 0, "Solid" if tile in platform_blocks else "Non-Solid")
 
 		# initialize an empty list to save collisions of this cluster
-		cluster_collisions[cluster_id] = {}
-		substructures[cluster_id] = Substructure(cluster_id)
-		logger.debug("Setting core point (id {}) x: {}, y: {}".format(cluster_id, p[0],p[1]))
+		cluster_collisions[substructure_id] = {}
+		substructures[substructure_id] = Substructure(substructure_id)
+		logger.debug("Setting core point (id {}) x: {}, y: {}".format(substructure_id, p[0],p[1]))
 		# fields: id, x_min, x_max, y_min, y_max, move list (to guide expansion), previois move
-		clusters.append([cluster_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u", D])
-		cluster_id += 1
+		clusters.append([substructure_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u", D])
+		substructure_id += 1
 
 	pretty_print_graph_map(graph_map)
 
@@ -151,7 +151,7 @@ def get_substructures_rect(map_data, points, D=5, S=2):
 
 	logger.info("Connecting nodes: ")
 	for c in connecting_nodes:
-		logger.info("Node cluster_id: {}, r: {}, c: {} ".format(c.cluster_id, c.r, c.c))
+		logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure_id, c.r, c.c))
 		logger.info(c.edges)
 
 	substructures = generate_substructures(graph_map, connecting_nodes)
@@ -186,13 +186,13 @@ def generate_substructures(graph_map, connecting_nodes):
 			n = graph_map[r][c]
 
 			if n != None:
-				if n.cluster_id not in substructures.keys():
-					substructures[n.cluster_id] = Substructure(n.cluster_id)
+				if n.substructure_id not in substructures.keys():
+					substructures[n.substructure_id] = Substructure(n.substructure_id)
 
-				substructures[n.cluster_id].insert_node(n)
+				substructures[n.substructure_id].insert_node(n)
 
 	for connecting in connecting_nodes:
-		substructures[connecting.cluster_id].insert_node(connecting)
+		substructures[connecting.substructure_id].insert_node(connecting)
 
 	return list(substructures.values())
 
@@ -206,19 +206,19 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 	cluster_collisions = {}
 	connecting_nodes = []
 
-	cluster_id = 1
+	substructure_id = 1
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
 	#pretty_print_graph_map(graph_map)
 
-	def get_substructures_by_cluster_id(node_list):
+	def get_substructures_by_substructure_id(node_list):
 		clusters = {}
 
 		for n in node_list:
-			if n.cluster_id not in clusters.keys():
-				clusters[n.cluster_id] = []
+			if n.substructure_id not in clusters.keys():
+				clusters[n.substructure_id] = []
 
-			clusters[n.cluster_id].append(n)
+			clusters[n.substructure_id].append(n)
 
 		return clusters
 
@@ -245,22 +245,22 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 
 				if graph_map[row][col] == None:
 					tile = map_data.get(row, col)
-					child = Node(row, col, tile, node.cluster_id, d, s, "Solid" if tile in platform_blocks else "Non-Solid")
+					child = Node(row, col, tile, node.substructure_id, d, s, "Solid" if tile in platform_blocks else "Non-Solid")
 					graph_map[row][col] = child
 
 					nodes.append(child)
 
 				else:
 
-					collided_id = graph_map[row][col].cluster_id
-					current_id = node.cluster_id
+					collided_id = graph_map[row][col].substructure_id
+					current_id = node.substructure_id
 
 					if collided_id != current_id and collided_id not in cluster_collisions[current_id]:
 
 						# Create a connecting node for the current cluster
 						# in the pos where the other cluster's node exists
-						node_1 = Node(row, col, "*", node.cluster_id, d, s, "Connecting")
-						#node_1.cluster_id = current_id
+						node_1 = Node(row, col, "*", node.substructure_id, d, s, "Connecting")
+						#node_1.substructure_id = current_id
 						#node_1.d = d
 						node_1.connectors = []
 						connecting_nodes.append(node_1)
@@ -268,7 +268,7 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 						# Create anoter connecting node for the other cluster
 						# in the pos of the current cluster's node
 						node_2 = Node(r, c, "*", collided_id, d, s, "Connecting")
-						#node_2.cluster_id = collided_id
+						#node_2.substructure_id = collided_id
 						#node_2.d = d
 						node_2.connectors = []
 						connecting_nodes.append(node_2)
@@ -284,14 +284,14 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 	for p in points:
 		# create a core node for each of the points passed
 		tile = map_data.get(p[0], p[1])
-		node = Node(p[0], p[1], tile, cluster_id, 0, 0, "Solid" if tile in platform_blocks else "Non-Solid")
-		#node.cluster_id = cluster_id
-		cluster_collisions[cluster_id] = []
-		cluster_id += 1
+		node = Node(p[0], p[1], tile, substructure_id, 0, 0, "Solid" if tile in platform_blocks else "Non-Solid")
+		#node.substructure_id = substructure_id
+		cluster_collisions[substructure_id] = []
+		substructure_id += 1
 		graph_map[p[0]][p[1]] = node
 
 		nodes.append(node)
-		logger.debug(" id: {}, x: {}, y: {}, tile: {}".format(node.cluster_id, p[0],p[1], node.tile))
+		logger.debug(" id: {}, x: {}, y: {}, tile: {}".format(node.substructure_id, p[0],p[1], node.tile))
 
 	while len(nodes) > 0:
 
@@ -310,7 +310,7 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 
 	logger.info("Connecting nodes: ")
 	for c in connecting_nodes:
-		logger.info("Node cluster_id: {}, r: {}, c: {} ".format(c.cluster_id, c.r, c.c))
+		logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure_id, c.r, c.c))
 		logger.info(c.edges)
 
 	substructures = generate_substructures(graph_map, connecting_nodes)
@@ -319,6 +319,6 @@ def get_substructures_diamond(map_data, points, D=5, S=2):
 	# for s in substructures:
 	# 	logger.info(s)
 
-	#substructures = get_substructures_by_cluster_id(all_expanded_nodes)
+	#substructures = get_substructures_by_substructure_id(all_expanded_nodes)
 
 	return substructures

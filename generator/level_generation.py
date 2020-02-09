@@ -139,18 +139,18 @@ def instantiate_base_level(id_substructures):
 	for c in range(3):
 		platform = Node(15, c, "X")
 		platform.type = "Solid"
-		platform.cluster_id = g_s.id
+		platform.substructure_id = g_s.id
 		g_s.insert_node(platform)
 
 		for r in range(15):
 			if r == 14 and c == 1: continue
 			air = Node(r, c, "-")
 			air.type = "Non-Solid"
-			air.cluster_id = g_s.id
+			air.substructure_id = g_s.id
 			g_s.insert_node(air)
 
 	mario = Node(14, 1, "M")
-	mario.cluster_id = g_s.id
+	mario.substructure_id = g_s.id
 	g_s.insert_node(mario)
 
 	connecting = Node(15, 3, "*", g_s.id, 0, 0, "Connecting")
@@ -164,17 +164,17 @@ def instantiate_base_level(id_substructures):
 	for c in range(1, 3):
 		platform = Node(15, c, "X")
 		platform.type = "Solid"
-		platform.cluster_id = g_f.id
+		platform.substructure_id = g_f.id
 		g_f.insert_node(platform)
 
 		for r in range(15):
 			air = Node(r, c, "-")
 			air.type = "Non-Solid"
-			air.cluster_id = g_f.id
+			air.substructure_id = g_f.id
 			g_f.insert_node(air)
 
 	finish = Node(14, 2, "F")
-	finish.cluster_id = g_f.id
+	finish.substructure_id = g_f.id
 	g_f.insert_node(finish)
 
 	connecting = Node(15, 0, "*", g_f.id, 0, 0, "Connecting")
