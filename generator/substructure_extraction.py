@@ -1,7 +1,7 @@
 import logging
 from .level import Level
 from .point_selection import spaced_selection, evenly_spaced_selection
-from .substructure_selection import get_substructures_diamond, get_substructures
+from .substructure_selection import get_substructures
 
 logger = logging.getLogger(__name__)
 
