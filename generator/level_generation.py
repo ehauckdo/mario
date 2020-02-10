@@ -180,7 +180,6 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 
 def instantiate_base_level(id_substructures):
 	g_s = Substructure(id_substructures)
-
 	for c in range(3):
 		platform = Node(15, c, "X", "Solid", g_s)
 		g_s.nodes.append(platform)
@@ -197,7 +196,6 @@ def instantiate_base_level(id_substructures):
 	g_s.append_connector(connector)
 
 	id_substructures += 1
-
 	g_f = Substructure(id_substructures)
 
 	for c in range(1, 3):
@@ -210,7 +208,6 @@ def instantiate_base_level(id_substructures):
 
 	finish = Node(14, 2, "F", "Solid", g_f)
 	g_f.nodes.append(finish)
-
 	connector = Connector(15, 0, "l", g_f)
 	g_f.append_connector(connector)
 
