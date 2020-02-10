@@ -8,15 +8,15 @@ from generator import substructure_combine
 from helper import io
 from tools.render_level.render_level import render_structure
 
-logging.basicConfig(filename="logs/log", level=logging.INFO, filemode='w')
+logging.basicConfig(filename="output/log", level=logging.DEBUG, filemode='w')
 
 def parse_args(args):
 	usage = "usage: %prog [options]"
 	parser = optparse.OptionParser(usage=usage)
 	parser.add_option('-l', action="store", type="string", dest="mapfile",help="Path/name of the level file", default="maps/lvl-1.txt")
-	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of level to be generated", default=1)
+	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of level to be generated", default=10)
 	parser.add_option('-n', action="store", type="int", dest="n",help="Number of structures to be selected", default=30)
-	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=3)
+	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=4)
 	parser.add_option('-s', action="store", type="int", dest="s",help="Extended radius of structures based on similarity", default=8)
 	parser.add_option('-m', action="store", type="int", dest="min_structures",help="Minimum number of structures to be placed on a level", default=15)
 
@@ -74,8 +74,24 @@ if __name__ == '__main__':
 	Path("output/structures/").mkdir(parents=True, exist_ok=True)
 	Path("output/levels/").mkdir(parents=True, exist_ok=True)
 
-	#g_s, g_f, substructures = load_structures()
-	g_s, g_f, substructures = fetch_structures(opt)
+	g_s, g_f, substructures = load_structures()
+	#g_s, g_f, substructures = fetch_structures(opt)
+
+	# for s in substructures:
+	# 	logging.info("Substructure {}:".format(s.id))
+	# 	logging.info("\n{}".format(s.pretty_print()))
+	# 	#logging.info("Combinables:")
+	# 	#for s2, n in s.get_available_substitutions():
+	# 		#logging.info("Node: {}".format(n))
+	# 		#logging.info("\n{}".format(s2.pretty_print()))
+
+	# logging.info("Substructure {}:".format(g_s.id))
+	# logging.info("\n{}".format(g_s.pretty_print()))
+	# #logging.info("Combinables:")
+	# #for c1, s_id, c2 in g_s.get_available_substitutions():
+	# 	#logging.info("Node: {}".format(n))
+	# 	#logging.info("\n{}".format(s2.pretty_print()))
+	# sys.exit()
 
 	for n in range(opt.output_number):
 		structures_used = 0

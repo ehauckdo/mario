@@ -3,18 +3,6 @@ import copy
 from .reachability import is_reachable
 logger = logging.getLogger(__name__)
 
-def group_by_direction(connecting_nodes_list):
-	directions = {"r":[], "l":[], "u":[], "d":[]}
-	for c_id in connecting_nodes_list.keys():
-		print("Cluster {}".format(c_id))
-		connecting_nodes = connecting_nodes_list[c_id]
-		for n in connecting_nodes:
-			edge = n.edges[0]
-			d = edge.properties["direction"]
-			directions[d].append((c_id, n))
-
-	return directions
-
 def do_overlap(s1, s2):
 	# TODO: improve performance by building a matrix
 	for n1 in s1.nodes:
@@ -39,10 +27,9 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
 
 	s2_adjusted = copy.deepcopy(s2)
 
-	#s2_adjusted.adjust(s2, n1, n2)
-
-	s2_adjusted.adjust_columns(adjust_col)
-	s2_adjusted.adjust_rows(adjust_row)
+	for n in s2_adjusted.nodes+s2_adjusted.connecting:
+		n.c += adjust_col
+		n.r += adjust_row
 
 	for i in range(len(s2_adjusted.nodes)-1, -1, -1):
 		n = s2_adjusted.nodes[i]
@@ -73,14 +60,13 @@ def find_substructures_combinations(substructures):
 		connecting_nodes.extend(s.connecting)
 
 	# go through all substructures checking connecting nodes
-
 	for s1 in substructures:
 	#for index1 in range(len(substructures)-1):
 		#s1 = substructures[index1]
 		logger.debug("-Start: connecting substructures in {}".format(s1.id))
 
 		for n1 in s1.connecting:
-			direction = n1.edges[0].properties["direction"]
+			direction = n1.direction
 			logger.debug("--Start: Processing connecting node {}, direction: {}".format(n1, direction))
 
 			if direction not in main_directions:
@@ -95,7 +81,7 @@ def find_substructures_combinations(substructures):
 				if s1.id == s2.id: continue
 
 				for n2 in s2.connecting:
-					n2_direction = n2.edges[0].properties["direction"]
+					n2_direction = n2.direction
 
 					# second condition ensures that both substructures
 					# are connecting at the same height/
@@ -107,10 +93,8 @@ def find_substructures_combinations(substructures):
 
 							if combinable:
 								logger.info("--- Combinable ({}): n1 {}, ({}): n2 {}".format(s1.id, n1, s2.id, n2))
-								n1.edges[0].properties["combinable"].append((s2.id, n2))
-								n2.edges[0].properties["combinable"].append((s1.id, n1))
-								s1.combinable.append((s2,n2))
-								s2.combinable.append((s1,n1))
+								n1.combinable.append((s2.id, n2.sub_id))
+								n2.combinable.append((s1.id, n1.sub_id))
 							else:
 								logger.debug("--- Not combinable")
 
