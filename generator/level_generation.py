@@ -102,11 +102,13 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 
 	while len(available_substitutions) > 0:
 
-		while len(available_substitutions) > 0:
+		while True:
 			# logger.info("All Available substitutions: ")
 			# for str1, c1, str2_id, c2_id in available_substitutions:
 			# 	logger.info("Structure {}, connector {}, to Structure {} via connector {}".format(str1.id, c1, str2_id, c2_id))
-
+			while len(available_substitutions) == 0:
+				level = backtrack(level)
+				available_substitutions = get_available_substitutions(level)
 			str1, c1, str2_id, c2_sub_id = random.choice(available_substitutions)
 			available_substitutions.remove((str1, c1, str2_id, c2_sub_id))
 			if str2_id == g_s.id or str2_id == g_f.id: continue
