@@ -192,15 +192,15 @@ def instantiate_base_level(id_substructures):
 	g_s = Substructure(id_substructures)
 	for c in range(3):
 		platform = Node(15, c, "X", "Solid", g_s)
-		g_s.nodes.append(platform)
+		g_s.append_node(platform)
 
 		for r in range(15):
 			if r == 14 and c == 1: continue
 			air = Node(r, c, "-", "Non-Solid", g_s)
-			g_s.nodes.append(air)
+			g_s.append_node(air)
 
 	mario = Node(14, 1, "M", "Solid", g_s)
-	g_s.nodes.append(mario)
+	g_s.append_node(mario)
 
 	connector = Connector(15, 3, "r", g_s)
 	g_s.append_connector(connector)
@@ -210,14 +210,14 @@ def instantiate_base_level(id_substructures):
 
 	for c in range(1, 3):
 		platform = Node(15, c, "X", "Solid", g_f)
-		g_f.nodes.append(platform)
+		g_f.append_node(platform)
 
 		for r in range(15):
 			air = Node(r, c, "-", "Non-Solid", g_f)
-			g_f.nodes.append(air)
+			g_f.append_node(air)
 
 	finish = Node(14, 2, "F", "Solid", g_f)
-	g_f.nodes.append(finish)
+	g_f.append_node(finish)
 	connector = Connector(15, 0, "l", g_f)
 	g_f.append_connector(connector)
 

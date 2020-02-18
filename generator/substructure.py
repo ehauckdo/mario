@@ -4,18 +4,6 @@ import copy
 from .level import Level
 logger = logging.getLogger(__name__)
 
-class Edge:
-	def __init__(self):
-		pass
-
-	def __init__(self, n1, n2, properties={}):
-		self.n1 = n1
-		self.n2 = n2
-		self.properties = properties
-
-	def __repr__(self):
-		return "{} :{}".format(self.n2,self.properties)
-
 class Connector:
 	def __init__(self, r, c, direction, substructure=None):
 		self.r = r
@@ -40,10 +28,6 @@ class Node:
 	def __repr__(self):
 		return "({},{})".format(self.r, self.c)
 
-	def add_edge(self, n2, properties):
-		edge = Edge(self, n2, properties)
-		self.edges.append(edge)
-
 class Substructure:
 
 	def __init__(self, substructure_id):
@@ -51,6 +35,13 @@ class Substructure:
 		self.sub_id = 0 # sub_id for connectors
 		self.nodes = []
 		self.connecting = []
+		self.enemies = 0
+
+	def append_node(self, n):
+		enemy_tiles = ["y", "Y", "E", "g", "k", "K", "r"]
+		self.nodes.append(n)
+		if n.tile in enemy_tiles:
+			self.enemies += 1
 
 	def append_connector(self,c):
 		c.sub_id = self.sub_id
