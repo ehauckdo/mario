@@ -58,7 +58,6 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 	pretty_print_graph_map(graph_map)
 	return collisions
 
-
 def get_substructures(map_data, points, D=5, S=2):
 	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
@@ -169,22 +168,6 @@ def get_substructures(map_data, points, D=5, S=2):
 
 	return substructures
 
-def append_adjacent_edges(graph_map):
-
-	for r in range(len(graph_map)):
-		for c in range(len(graph_map[r])):
-			n = graph_map[r][c]
-
-			directions = [("r",r,c+1),("d",r+1, c),("l",r, c-1),("u",r-1, c)]
-
-			for direction, neigh_r, neigh_c in directions:
-				try:
-					if graph_map[neigh_r][neigh_c] != None:
-						neighbour = graph_map[neigh_r][neigh_c]
-						n.add_edge(neighbour, {"direction":direction})
-				except:
-					pass
-
 def generate_substructures(graph_map, connecting_nodes):
 	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	substructures = {}
@@ -199,9 +182,10 @@ def generate_substructures(graph_map, connecting_nodes):
 					#substructures[n.substructure.id] = Substructure(n.substructure.id)
 					substructures[n[1]] = Substructure(n[1])
 
+				#if n[0] in platform_blocks:
 				node = Node(r, c, n[0], "Solid" if n[0] in platform_blocks else "Non-Solid", substructures[n[1]])
-				#substructures[n.substructure.id].nodes.append(n)
-				substructures[n[1]].nodes.append(node)
+				#substructures[n.substructure.id].append_node(n)
+				substructures[n[1]].append_node(node)
 
 	#for connecting in connecting_nodes:
 	#	substructures[connecting.substructure.id].append_connector(connecting)
