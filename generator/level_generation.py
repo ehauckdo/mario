@@ -7,17 +7,6 @@ from .level import Level
 
 logger = logging.getLogger(__name__)
 
-def backtrack(structures):
-	removed_structure = structures.pop()
-
-	for connector in removed_structure.connecting:
-		logger.info("Clearing connectors associated with structure {}".format(removed_structure.id))
-		if connector.combined != None:
-			structure1, c1 = connector.combined
-			c1.combined = None
-			logger.info("Clearing node {} from structure {}".format(c1.sub_id, structure1.id))
-	return structures
-
 def print_level(structures):
 	directions = {"r":">", "l":"<", "u":"^", "d":"v"}
 	level = Level()
@@ -29,6 +18,17 @@ def print_level(structures):
 		base_structure.connecting.extend(s.connecting)
 		#logger.info("{}, {}".format(len(base_structure.nodes), len(base_structure.connecting)))
 	return base_structure.pretty_print()
+
+def backtrack(structures):
+	removed_structure = structures.pop()
+
+	for connector in removed_structure.connecting:
+		logger.info("Clearing connectors associated with structure {}".format(removed_structure.id))
+		if connector.combined != None:
+			structure1, c1 = connector.combined
+			c1.combined = None
+			logger.info("Clearing node {} from structure {}".format(c1.sub_id, structure1.id))
+	return structures
 
 def prepare(structure1, c1, structure2, c2):
 	"""Prepare structure 2 to to be connected with structure1"""
@@ -58,13 +58,16 @@ def prepare(structure1, c1, structure2, c2):
 
 def has_collision(structures):
 	#"""Given a list of structures, check if they would collide"""
+	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	level_matrix = {}
 	for str in structures:
 		for n in str.nodes:
 			if (n.r, n.c) not in level_matrix.keys():
 				level_matrix[(n.r,n.c)] = n.tile
 			else:
-				return True
+				if(n.tile in platform_blocks
+				    or level_matrix[(n.r,n.c)] in platform_blocks):
+				  return True
 	return False
 
 def get_available_substitutions(structures):
@@ -156,7 +159,8 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 		# 		sys.exit()
 		# 	logger.info("Restarting generation...")
 
-		if highest_col >= 202:
+		#if highest_col >= 202:
+		if len(level) == 30-1:
 			for str1, c1, str2_id, c2_sub_id in available_substitutions:
 				if str2_id == g_f.id:
 					str2 = copy.deepcopy(g_f)
@@ -166,16 +170,20 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 					#if not has_collision(level+[str2]):
 					level.append(str2)
 					logger.info("g_f finished!")
+					usage_stats[str2_id] += 1
 					print("Reached column 202!")
 					finished = True
 					break
 					#else:
 					#	logger.info("g_f collided!")
+			finished = True
+			break
 
 		if finished:
 			break
 
 	generated_structure = Substructure(-1)
+	print("Length: {}".format(len(level)))
 	for s in level:
 		generated_structure.nodes.extend(s.nodes)
 	return generated_structure, usage_stats, count_substitutions
