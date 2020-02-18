@@ -1,4 +1,5 @@
 import logging
+from . import constants
 from .substructure import Substructure, Node, Connector
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,6 @@ def pretty_print_graph_map(graph_map, tiles=False):
 		logger.info(row)
 
 def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
-	platform_blocks = ["X", "!", '#', 't', "Q", "S", "?", "U"]
 	collisions = []
 	if x_min < 0 or y_min < 0:
 		raise IndexError
@@ -48,7 +48,7 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 				if graph_map[x][y] == None:
 					#graph_map[x][y] = id
 					tile = map_data.get(x, y)
-					#graph_map[x][y] = Node(x, y, tile, "Solid" if tile in platform_blocks else "Non-Solid", id)
+					#graph_map[x][y] = Node(x, y, tile, "Solid" if tile in constants.platform_tiles else "Non-Solid", id)
 					graph_map[x][y] = (tile, id)
 
 	# remove duplicates from list
@@ -59,7 +59,6 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 	return collisions
 
 def get_substructures(map_data, points, D=5, S=2):
-	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
 	substructures = {}
@@ -75,7 +74,7 @@ def get_substructures(map_data, points, D=5, S=2):
 	for p in points:
 		# set id of cluster in graph map
 		tile = map_data.get(p[0], p[1])
-		#graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, "Solid" if tile in platform_blocks else "Non-Solid", substructure_id)
+		#graph_map[p[0]][p[1]] = Node(p[0], p[1], tile, "Solid" if tile in constants.platform_tiles else "Non-Solid", substructure_id)
 		graph_map[p[0]][p[1]] = (tile, substructure_id)
 
 		# initialize an empty list to save collisions of this cluster
@@ -169,7 +168,6 @@ def get_substructures(map_data, points, D=5, S=2):
 	return substructures
 
 def generate_substructures(graph_map, connecting_nodes):
-	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
 	substructures = {}
 
 	for r in range(len(graph_map)):
@@ -182,8 +180,8 @@ def generate_substructures(graph_map, connecting_nodes):
 					#substructures[n.substructure.id] = Substructure(n.substructure.id)
 					substructures[n[1]] = Substructure(n[1])
 
-				#if n[0] in platform_blocks:
-				node = Node(r, c, n[0], "Solid" if n[0] in platform_blocks else "Non-Solid", substructures[n[1]])
+				#if n[0] in constants.platform_tiles:
+				node = Node(r, c, n[0], "Solid" if n[0] in constants.platform_tiles else "Non-Solid", substructures[n[1]])
 				#substructures[n.substructure.id].append_node(n)
 				substructures[n[1]].append_node(node)
 

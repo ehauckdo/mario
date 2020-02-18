@@ -1,6 +1,7 @@
 #import substructure_manipulation
 import logging
 import copy
+from . import constants
 from .level import Level
 logger = logging.getLogger(__name__)
 
@@ -38,9 +39,8 @@ class Substructure:
 		self.enemies = 0
 
 	def append_node(self, n):
-		enemy_tiles = ["y", "Y", "E", "g", "k", "K", "r"]
 		self.nodes.append(n)
-		if n.tile in enemy_tiles:
+		if n.tile in constants.enemy_tiles:
 			self.enemies += 1
 
 	def append_connector(self,c):
