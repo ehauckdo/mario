@@ -32,6 +32,33 @@ def backtrack(structures):
       logger.info("Clearing node {} from structure {}".format(c1.sub_id, structure1.id))
   return structures
 
+def check_connectors(structures):
+  """Disable connectors that don't have sufficient space around them"""
+  level_matrix = {}
+  for str in structures:
+    for n in str.nodes:
+      if (n.r, n.c) not in level_matrix.keys():
+        level_matrix[(n.r,n.c)] = n.tile
+
+  # list of adjacent tiles to check
+  switcher = {
+      "r": [(0, 0), (1,  0), (-1, 0), ( 0, 1), ( 1,  1), (-1,  1)],
+      "l": [(0, 0), (1,  0), (-1, 0), ( 0,-1), ( 1, -1), (-1, -1)],
+      "u": [(0, 0), (0, -1), ( 0, 1), (-1, 0), (-1, -1), (-1,  1)],
+      "d": [(0, 0), (0, -1), ( 0, 1), ( 1, 0), ( 1, -1), ( 1,  1)]
+  }
+
+  for str in structures:
+    for c in reversed(str.connecting):
+      if c.combined == None:
+        for r_d, c_d in switcher[c.direction]:
+          # we check if there are tiles in the adjacent positions
+          if (c.r + r_d, c.c + c_d) in level_matrix.keys():
+            logger.info("disabling connector at ({},{})".format(c.r, c.c))
+            #c.combined = -1
+            str.connecting.remove(c)
+            break
+
 def prepare(structure1, c1, structure2, c2):
   """Prepare structure 2 to to be connected with structure1"""
   horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
@@ -119,26 +146,27 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
       str2 =  copy.deepcopy(original_substructures[str2_id])
       c2 = str2.get_connector(c2_sub_id)
 
-      logger.info("Trying to append structure {} using its connector {} via structure {} with connector {}".format(str2_id, c2, str1.id, c1))
-      logger.info("\n{}".format(str2.pretty_print()))
+      #logger.info("Trying to append structure {} using its connector {} via structure {} with connector {}".format(str2_id, c2, str1.id, c1))
+      #logger.info("\n{}".format(str2.pretty_print()))
 
       str2 = prepare(str1, c1, str2, c2)
       level.append(str2)
 
+      check_connectors(level)
       collides = has_collision(level)
       available_substitutions = get_available_substitutions(level)
       #density = get_density_score(level, 2)
 
-      if len(available_substitutions) <= 0: #or collides:
+      if len(available_substitutions) <= 0 or collides:
         if len(available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
         if collides: logger.info("Collision Happened!")
-        #c1.combined = None # reset state of first connector
+        c1.combined = None # reset state of first connector
         level = backtrack(level)
         available_substitutions = get_available_substitutions(level)
-        # input("Press Enter to continue...")
+        #input("Press Enter to continue...")
       else:
-        # logger.info("Sucessfull substitution")
-        # input("Press Enter to continue...")
+        #logger.info("Sucessfull substitution")
+        #input("Press Enter to continue...")
         usage_stats[str2_id] += 1
         for n in str2.nodes:
           if n.c > highest_col:
@@ -150,19 +178,6 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
     logger.info("Available substitutions: {}".format(len(available_substitutions)))
     logger.info("Substitutions applied so far: {}".format(count_substitutions))
     logger.info("\n{}".format(print_level(level)))
-
-    # if len(level) >= 4:
-    #   while len(level) > 1:
-    #     logger.info("Starting backtracking...")
-    #     level = backtrack(level)
-    #     available_substitutions = get_available_substitutions(level)
-    #     logger.info("Backtrack complete.")
-    #     logger.info("\n{}".format(print_level(level)))
-    #   count_backtrack += 1
-    #
-    #   if count_backtrack > 1:
-    #     sys.exit()
-    #   logger.info("Restarting generation...")
 
     #if highest_col >= 202:
     if len(level) == 30-1:
