@@ -81,8 +81,15 @@ def fetch_structures(data):
 
   # Instiate the base starting and finishing structures
   g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
+<<<<<<< HEAD
   substructure_combine.find_substructures_combinations(substructures
                                                        + [g_s, g_f])
+=======
+
+  substructure_combine.find_substructures_combinations(substructures
+                                                       + [g_s, g_f])
+
+>>>>>>> d85020054e7e7d3bb1d36f27d56cf2b8fbfdc6d1
   for s in substructures:
     io.save(s, "output/structures/s_{}".format(s.id))
     render_structure(s.matrix_representation(),
