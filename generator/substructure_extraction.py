@@ -6,12 +6,14 @@ from .substructure_selection import get_substructures
 logger = logging.getLogger(__name__)
 
 def read_level(path):
+	logger.info("Reading {}".format(path))
 	# read map as rows x columns
 	map_data = []
 	input_file = open(path, "r")
 	for line in input_file:
 		map_data.append([])
-		for char in line[:-1]:
+		for char in line:
+			if char == "\n": continue
 			map_data[-1].append(char)
 
 	# instantiate map class as columns x rows
@@ -22,7 +24,7 @@ def read_level(path):
 
 	return map_struct
 
-def extract_structures(path_to_map, n, d, s):
+def extract_structures(path_to_map, n, d):
 	# Generate a Map-Matrix structure to hold the original map
 	map_data = read_level(path_to_map)
 	logger.info("Selected Map File: {}".format(path_to_map))
@@ -41,7 +43,7 @@ def extract_structures(path_to_map, n, d, s):
 	# Expansion will be done until D manhattan-distance from the core
 	# points. If tiles around the edges are the same as of the edges,
 	# this expansion can continue for more S manhattan-distance.
-	substructures = get_substructures(map_data, selected_points, d, s)
+	substructures = get_substructures(map_data, selected_points, d)
 	logger.info("Selected Substructures: ")
 	for s in substructures:
 		logger.info("\n{}".format(s.pretty_print(True)))
