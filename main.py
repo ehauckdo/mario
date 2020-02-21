@@ -23,6 +23,18 @@ def parse_args(args):
 	(opt, args) = parser.parse_args()
 	return opt, args
 
+def get_level_paths(opt):
+	levels = []
+	if "txt" in opt.mapfile:
+		levels.append([opt.mapfile, opt.n, opt.d])
+	else:
+		file_names = os.listdir(opt.mapfile)
+		file_paths = ["{}{}".format(opt.mapfile,x) for x in file_names]
+		for file in file_paths:
+			if "DS_Store" in file: continue
+			levels.append([file, opt.n, opt.d])
+	return levels
+
 def load_structures(path="output/structures"):
 	structures = []
 	g_s = None
@@ -40,10 +52,14 @@ def load_structures(path="output/structures"):
 
 	return g_s, g_f, structures
 
-def fetch_structures(opt):
+def fetch_structures(data):
 	# Randomnly select 'n' points from in the map
 	# with a minimum of D size and extended size S
-	substructures = substructure_extraction.extract_structures(opt.mapfile, opt.n, opt.d, opt.s)
+	substructures = []
+	for level, n, d in data:
+		substructures.extend(substructure_extraction.extract_structures(level, n, d))
+
+	#substructures = substructure_extraction.extract_structures(opt.mapfile, opt.n, opt.d)
 
 	# Instiate the base starting and finishing structures
 	g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
@@ -52,7 +68,7 @@ def fetch_structures(opt):
 
 	for s in substructures:
 		io.save(s, "output/structures/s_{}".format(s.id))
-		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+		#render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
 	io.save(g_s, "output/structures/g_s")
 	render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
 	io.save(g_f, "output/structures/g_f")
@@ -74,30 +90,36 @@ if __name__ == '__main__':
 	Path("output/structures/").mkdir(parents=True, exist_ok=True)
 	Path("output/levels/").mkdir(parents=True, exist_ok=True)
 
+	data = get_level_paths(opt)
+
 	g_s, g_f, substructures = load_structures()
-	#g_s, g_f, substructures = fetch_structures(opt)
+	#g_s, g_f, substructures = fetch_structures(data)
 
-	# for s in substructures:
-	# 	logging.info("Substructure {}:".format(s.id))
-	# 	logging.info("\n{}".format(s.pretty_print()))
-	# 	#logging.info("Combinables:")
-	# 	#for s2, n in s.get_available_substitutions():
-	# 		#logging.info("Node: {}".format(n))
-	# 		#logging.info("\n{}".format(s2.pretty_print()))
+	for s in substructures:
+		logging.info("Substructure {}:".format(s.id))
+		logging.info("\n{}".format(s.pretty_print()))
+		logging.info("Combinables:")
+		for str1, c1, s_id, c2 in s.get_available_substitutions():
+			logging.info("Connector {} connects to Substructure: {} via Connector {}".format(c1, s_id, c2))
+		logging.info("Connectors:")
+		for c in s.connecting:
+			logging.info("{}".format(c))
 
-	# logging.info("Substructure {}:".format(g_s.id))
-	# logging.info("\n{}".format(g_s.pretty_print()))
-	# #logging.info("Combinables:")
-	# #for c1, s_id, c2 in g_s.get_available_substitutions():
-	# 	#logging.info("Node: {}".format(n))
-	# 	#logging.info("\n{}".format(s2.pretty_print()))
-	# sys.exit()
+	logging.info("Substructure {}:".format(g_s.id))
+	logging.info("\n{}".format(g_s.pretty_print()))
+	logging.info("Combinables:")
+	for str1, c1, s_id, c2 in g_s.get_available_substitutions():
+		logging.info("Connector {} connects to Substructure: {} via Connector {}".format(c1, s_id, c2))
+	for c in g_s.connecting:
+		logging.info("{}".format(c))
+	#sys.exit()
 
 	for n in range(opt.output_number):
 		structures_used = 0
+		logging.info("Generating level {}".format(n))
 		while structures_used < opt.min_structures:
 			level, stats, structures_used = level_generation.generate_level(substructures, g_s, g_f, opt.min_structures)
 		level_path = "output/levels/level_{}.txt".format(n)
 		print("Rendering level {}".format(n))
 		level.save_as_level(level_path)
-		render_structure(level_path, "output/levels/level_{}.png".format(n))
+		#render_structure(level_path, "output/levels/level_{}.png".format(n))
