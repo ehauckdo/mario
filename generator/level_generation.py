@@ -2,6 +2,8 @@ import logging
 import random
 import copy
 import sys
+from . import constants
+from .scoring import get_density_score
 from .substructure import Substructure, Node, Connector
 from .level import Level
 
@@ -56,17 +58,16 @@ def prepare(structure1, c1, structure2, c2):
 				structure2.connecting.remove(n)
 	return structure2
 
-def has_collision(structures):
-	#"""Given a list of structures, check if they would collide"""
-	platform_blocks = ["X", '#', 't', "Q", "S", "?", "U"]
+def has_collision(structures, ignore_air=True):
+	"""Given a list of structures, check if they would collide"""
 	level_matrix = {}
 	for str in structures:
 		for n in str.nodes:
 			if (n.r, n.c) not in level_matrix.keys():
 				level_matrix[(n.r,n.c)] = n.tile
 			else:
-				if(n.tile in platform_blocks
-				    or level_matrix[(n.r,n.c)] in platform_blocks):
+				if(ignore_air) and (n.tile == "-"
+				    or level_matrix[(n.r,n.c)] == "-"):
 				  return True
 	return False
 
@@ -126,14 +127,18 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
 
 			collides = has_collision(level)
 			available_substitutions = get_available_substitutions(level)
+			#density = get_density_score(level, 2)
 
-			if len(available_substitutions) <= 0 or collides:
+			if len(available_substitutions) <= 0: or collides:
 				if len(available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
 				if collides: logger.info("Collision Happened!")
 				#c1.combined = None # reset state of first connector
 				level = backtrack(level)
 				available_substitutions = get_available_substitutions(level)
+				# input("Press Enter to continue...")
 			else:
+				# logger.info("Sucessfull substitution")
+				# input("Press Enter to continue...")
 				usage_stats[str2_id] += 1
 				for n in str2.nodes:
 					if n.c > highest_col:

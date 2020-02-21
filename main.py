@@ -68,7 +68,7 @@ def fetch_structures(data):
 
 	for s in substructures:
 		io.save(s, "output/structures/s_{}".format(s.id))
-		#render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
+		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
 	io.save(g_s, "output/structures/g_s")
 	render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
 	io.save(g_f, "output/structures/g_f")
@@ -122,4 +122,4 @@ if __name__ == '__main__':
 		level_path = "output/levels/level_{}.txt".format(n)
 		print("Rendering level {}".format(n))
 		level.save_as_level(level_path)
-		#render_structure(level_path, "output/levels/level_{}.png".format(n))
+		render_structure(level_path, "output/levels/level_{}.png".format(n))
