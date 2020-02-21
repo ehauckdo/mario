@@ -57,7 +57,11 @@ def render_structure(level, output_path):
 		for j in range(level_width):
 			if level[i][j] in skip: continue
 			if level[i][j] in escape: tile = tile_dict["connecting"]
-			else: tile = tile_dict[level[i][j]]
+			else:
+				try:
+					tile = tile_dict[level[i][j]]
+				except KeyError:
+					tile = tile_dict["err"]
 			new_im.paste(tile, (x_offset,y_offset))
 			x_offset += tile_width
 		y_offset += tile_height
