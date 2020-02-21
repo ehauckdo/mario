@@ -3,6 +3,8 @@ from . import constants
 from .substructure import Substructure, Node, Connector
 logger = logging.getLogger(__name__)
 
+substructure_id = 1
+
 def pretty_print_graph_map(graph_map, tiles=False):
 
 	import string
@@ -58,12 +60,12 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
 	pretty_print_graph_map(graph_map)
 	return collisions
 
-def get_substructures(map_data, points, D=5, S=2):
+def get_substructures(map_data, points, D=5):
 	graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
 	substructures = {}
 	cluster_collisions = {}
-	substructure_id = 1
+	global substructure_id
 
 	clusters = []
 	finished_clusters = []
