@@ -15,6 +15,7 @@ def load_tile_images(tiles):
 	tile_dict = {}
 	for t in tiles:
 		symbol = t.split("/")[-1].split(".")[0]
+		symbol = symbol.replace("_", "") #workaround for e.g. A.png and a.png
 		tile_dict[symbol] = Image.open(t)
 	return tile_dict
 
