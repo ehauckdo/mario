@@ -3,101 +3,262 @@ import optparse
 import logging
 from pathlib import Path
 from generator import level_generation
-from generator import substructure_extraction
-from generator import substructure_combine
+from generator import structure_extraction
+from generator import structure_combine
+from generator import scoring
 from helper import io
+import numpy as np
 from tools.render_level.render_level import render_structure
+import logging
+import logging.handlers
 
-logging.basicConfig(filename="output/log", level=logging.DEBUG, filemode='w')
+
+# use this to set a size limit for the log file
+class TruncatedFileHandler(logging.handlers.RotatingFileHandler):
+    def __init__(self, filename, mode='a', maxBytes=0, encoding=None, delay=0):
+        super(TruncatedFileHandler, self).__init__(
+            filename, mode, maxBytes, 0, encoding, delay)
+
+    def doRollover(self):
+        """Truncate the file"""
+        if self.stream:
+            self.stream.close()
+        dfn = self.baseFilename + ".1"
+        if os.path.exists(dfn):
+            os.remove(dfn)
+        os.rename(self.baseFilename, dfn)
+        os.remove(dfn)
+        self.mode = 'w'
+        self.stream = self._open()
+# filehandler = TruncatedFileHandler("output/log", "w", 9000000)
+# logging.basicConfig(
+#     #format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+#     level=logging.DEBUG, handlers=[filehandler])
+
+logging.basicConfig(filename="output/log",
+                   level=logging.INFO,
+                   filemode='w')
+#logging.disable(logging.CRITICAL)
 
 def parse_args(args):
-	usage = "usage: %prog [options]"
-	parser = optparse.OptionParser(usage=usage)
-	parser.add_option('-l', action="store", type="string", dest="mapfile",help="Path/name of the level file", default="maps/lvl-1.txt")
-	parser.add_option('-o', action="store", type="int", dest="output_number",help="Number of level to be generated", default=10)
-	parser.add_option('-n', action="store", type="int", dest="n",help="Number of structures to be selected", default=30)
-	parser.add_option('-d', action="store", type="int", dest="d",help="Minimum radius of structures", default=4)
-	parser.add_option('-s', action="store", type="int", dest="s",help="Extended radius of structures based on similarity", default=8)
-	parser.add_option('-m', action="store", type="int", dest="min_structures",help="Minimum number of structures to be placed on a level", default=15)
+  usage = "usage: %prog [options]"
+  parser = optparse.OptionParser(usage=usage)
+  parser.add_option('-l', action="store", type="string",
+                    dest="mapfile",
+                    help="Path/name of the level file",
+                    default="maps/lvl-1.txt")
+  parser.add_option('-o', action="store", type="int",
+                    dest="output_number",
+                    help="Number of level to be generated",
+                    default=10)
+  parser.add_option('-n', action="store", type="int",
+                    dest="n",
+                    help="Number of structures to be selected",
+                    default=35)
+  parser.add_option('-d', action="store", type="int",
+                    dest="d",
+                    help="Minimum radius of structures",
+                    default=4)
+  parser.add_option('-s', action="store", type="int",
+                    dest="s",
+                    help="Extended radius of structures based on similarity",
+                    default=8)
+  parser.add_option('-m', action="store", type="int",
+                    dest="min_structures",
+                    help="Minimum number of structures for a level",
+                    default=35)
+  (opt, args) = parser.parse_args()
+  return opt, args
 
-	(opt, args) = parser.parse_args()
-	return opt, args
+def get_level_paths(opt):
+  levels = []
+  if "txt" in opt.mapfile:
+    levels.append([opt.mapfile, opt.n, opt.d])
+  else:
+    file_names = os.listdir(opt.mapfile)
+    file_paths = ["{}{}".format(opt.mapfile,x) for x in file_names]
+    for file in file_paths:
+      if "DS_Store" in file: continue
+      levels.append([file, opt.n, opt.d])
+  return levels
 
 def load_structures(path="output/structures"):
-	structures = []
-	g_s = None
-	g_f = None
+  structures = []
+  g_s = None
+  g_f = None
 
-	for file in os.listdir(path):
-		if "." not in file:
-			if file == "g_s":
-				g_s = io.load("{}/{}".format(path, file))
-			elif file == "g_f":
-				g_f = io.load("{}/{}".format(path, file))
-			else:
-				structure = io.load("{}/{}".format(path, file))
-				structures.append(structure)
+  for file in os.listdir(path):
+    if "." not in file:
+      if file == "g_s":
+        g_s = io.load("{}/{}".format(path, file))
+      elif file == "g_f":
+        g_f = io.load("{}/{}".format(path, file))
+      else:
+        structure = io.load("{}/{}".format(path, file))
+        structures.append(structure)
+  return g_s, g_f, structures
 
-	return g_s, g_f, structures
+def save_structures(g_s, g_f, structures, folder="output/structures"):
+  for s in structures:
+    io.save(s, "{}/s_{}".format(folder, s.id))
+    render_structure(s.matrix_representation(),
+                     "{}/s_{}.png".format(folder, s.id))
+  io.save(g_s, "{}/g_s".format(folder))
+  render_structure(g_s.matrix_representation(),
+                   "{}/g_s.png".format(folder))
+  io.save(g_f, "{}/g_f".format(folder))
+  render_structure(g_f.matrix_representation(),
+                   "{}/g_f.png".format(folder))
 
-def fetch_structures(opt):
-	# Randomnly select 'n' points from in the map
-	# with a minimum of D size and extended size S
-	substructures = substructure_extraction.extract_structures(opt.mapfile, opt.n, opt.d, opt.s)
+  output_file = open("{}/struct_stats.txt".format(folder), "w")
+  for s in structures:
+    print("{}, {}, {}".format(s.id,len(s.connecting),
+                              len(s.available_substitutions())),
+                              file=output_file)
+  output_file.close()
 
-	# Instiate the base starting and finishing structures
-	g_s, g_f = level_generation.instantiate_base_level(len(substructures)+1)
+def extract_structures(data):
+  """
+  Returns g_s, g_f, and a list of structures given levels in data.
+  data: list of tuples of (path, n, d)
+  """
+  # Randomnly select 'n' points each level in data
+  # with a minimum of d size each
+  structures = []
+  for level, n, d in data:
+    level_structures = structure_extraction.extract_structures(level, n, d)
+    structures.extend(level_structures)
 
-	substructure_combine.find_substructures_combinations(substructures + [g_s, g_f])
+  # Instiate the base starting and finishing structures
+  g_s, g_f = level_generation.instantiate_base_level(len(structures)+1)
+  #save_structures(g_s, g_f, structures)
+  return g_s, g_f, structures
 
-	for s in substructures:
-		io.save(s, "output/structures/s_{}".format(s.id))
-		render_structure(s.matrix_representation(), "output/structures/s_{}.png".format(s.id))
-	io.save(g_s, "output/structures/g_s")
-	render_structure(g_s.matrix_representation(), "output/structures/g_s.png")
-	io.save(g_f, "output/structures/g_f")
-	render_structure(g_f.matrix_representation(), "output/structures/g_f.png")
+def get_subset(structures, n=0.1):
+  """
+  Given a list of structures, return a list with n% of them.
+  The probability of selection of a given structure is
+  proportional to the amount of connectors and enemies.
+  p(s) = 2*c + e
+  """
+  dimensions = ["n_connecting", "n_enemies"]
+  bins = {}
 
-	output_file = open("output/levels/level_stats.txt", "w")
-	for s in substructures:
-		print("{}, {}, {}".format(s.id, len(s.connecting), len(s.get_available_substitutions())), file=output_file)
-	output_file.close()
+  for str in structures:
+    str_dimensions = []
+    for d in dimensions:
+      str_dimensions.append(getattr(str, d)())
+    #logging.info("Attrs of str {}: {}".format(str.id, str_dimensions))
 
-	return g_s, g_f, substructures
+    key = tuple(str_dimensions)
+    if key not in bins.keys():
+      bins[key] = []
+    bins[key].append(str)
+
+  struct_list = []
+  probab_list = []
+  for con, en in bins.keys():
+    probability = con * 2 + en
+    for str in bins[(con,en)]:
+      struct_list.append(str)
+      probab_list.append(probability)
+
+  probab_list = [x/sum(probab_list) for x in probab_list]
+
+  n_select = int(len(structures)*n)
+  selected = np.random.choice(struct_list, n_select,
+                              replace=False, p=probab_list)
+  return selected.tolist()
+
+def minimize_combinations(structures):
+  """
+  if we have X structures and combinable information for ALL of them, we can
+  can pass a subset of structures to this function to reduce the combinable
+  information to to only the structures in the subset
+  """
+  ids = [s.id for s in structures]
+
+  for s in structures:
+    for c in s.connecting:
+      logging.info("combinables before: {}".format(c.combinable))
+      for s2_id, s2_c in reversed(c.combinable):
+        if s2_id not in ids:
+          c.combinable.remove((s2_id, s2_c))
+      logging.info("combinables after: {}".format(c.combinable))
 
 if __name__ == '__main__':
 
-	opt, args = parse_args(sys.argv[1:])
-	sys.setrecursionlimit(10000) # required for some of the operations
+  opt, args = parse_args(sys.argv[1:])
+  sys.setrecursionlimit(10000) # required for some of the operations
 
-	# make sure the output directory exists, otherwise create it
-	Path("output/structures/").mkdir(parents=True, exist_ok=True)
-	Path("output/levels/").mkdir(parents=True, exist_ok=True)
+  # make sure the output directory exists, otherwise create it
+  Path("output/structures/").mkdir(parents=True, exist_ok=True)
+  Path("output/levels/").mkdir(parents=True, exist_ok=True)
 
-	g_s, g_f, substructures = load_structures()
-	#g_s, g_f, substructures = fetch_structures(opt)
+  data = get_level_paths(opt)
 
-	# for s in substructures:
-	# 	logging.info("Substructure {}:".format(s.id))
-	# 	logging.info("\n{}".format(s.pretty_print()))
-	# 	#logging.info("Combinables:")
-	# 	#for s2, n in s.get_available_substitutions():
-	# 		#logging.info("Node: {}".format(n))
-	# 		#logging.info("\n{}".format(s2.pretty_print()))
+  #g_s, g_f, structures = load_structures()
+  g_s, g_f, structures = extract_structures(data)
 
-	# logging.info("Substructure {}:".format(g_s.id))
-	# logging.info("\n{}".format(g_s.pretty_print()))
-	# #logging.info("Combinables:")
-	# #for c1, s_id, c2 in g_s.get_available_substitutions():
-	# 	#logging.info("Node: {}".format(n))
-	# 	#logging.info("\n{}".format(s2.pretty_print()))
-	# sys.exit()
+  #logging.info("Number of structures before: {}".format(len(structures)))
+  #structures = get_subset(structures)
+  #logging.info("Number of structures after: {}".format(len(structures)))
+  #minimize_combinations(structures + [g_s, g_f])
 
-	for n in range(opt.output_number):
-		structures_used = 0
-		while structures_used < opt.min_structures:
-			level, stats, structures_used = level_generation.generate_level(substructures, g_s, g_f, opt.min_structures)
-		level_path = "output/levels/level_{}.txt".format(n)
-		print("Rendering level {}".format(n))
-		level.save_as_level(level_path)
-		render_structure(level_path, "output/levels/level_{}.png".format(n))
+  selected = [s.id for s in structures]
+  logging.info("Selected structures: {}".format(selected))
+  structure_combine.find_combinations(structures + [g_s, g_f])
+  save_structures(g_s, g_f, structures)
+  #sys.exit()
+
+  # for s in structures:
+  #   logging.info("structure {}:".format(s.id))
+  #   logging.info("\n{}".format(s.pretty_print()))
+  #   logging.info("Combinables:")
+  #   for c in s.connecting:
+  #     logging.info("Connecting {}".format(c.sub_id))
+  #     for s2_id, s2_c in c.combinable:
+  #       logging.info("Connector {} connects to structure: {} "\
+  #                  "via Connector {}".format(c, s2_id, s2_c))
+  #
+  # logging.info("structure {}:".format(g_s.id))
+  # logging.info("\n{}".format(g_s.pretty_print()))
+  # logging.info("Combinables:")
+  # for c in g_s.connecting:
+  #   for s2_id, s2_c in c.combinable:
+  #     logging.info("Connector {} connects to structure: {} "\
+  #                "via Connector {}".format(c, s2_id, s2_c))
+  #sys.exit()
+
+  ground_levels = []
+
+  for n in range(opt.output_number):
+
+    logging.info("Generating level {}".format(n))
+    level, stats, structures_used = level_generation.generate_level(
+       structures, g_s, g_f, opt.min_structures)
+    #ground_levels.append((scoring.get_enemies(level), level))
+    #level, structures_used = level_generation.greed_search(g_s, g_f, structures)
+    #if level == None:
+    #  break
+    #sys.exit()
+    level_path = "output/levels/level_{}.txt".format(n)
+    print("Rendering level {}".format(n))
+    level.save_as_level(level_path)
+    render_structure(level_path, "output/levels/level_{}.png".format(n))
+
+  # logging.info("LEVELS ORDERED BY GROUND (MAX): ")
+  # ground_levels.sort(key=lambda x: x[0], reverse=True)
+  # for score, level in ground_levels[:10]:
+  #   logging.info("Score: {}".format(score))
+  #   logging.info("\n{}".format(level.pretty_print()))
+  #   level_path = "output/levels/max_enemy/level_{}.txt".format(score)
+  #   level.save_as_level(level_path)
+  #
+  # logging.info("LEVELS ORDERED BY GROUND (MIN): ")
+  # ground_levels.sort(key=lambda x: x[0])
+  # for score, level in ground_levels[:10]:
+  #   logging.info("Score: {}".format(score))
+  #   logging.info("\n{}".format(level.pretty_print()))
+  #   level_path = "output/levels/min_enemy/level_{}.txt".format(score)
+  #   level.save_as_level(level_path)
