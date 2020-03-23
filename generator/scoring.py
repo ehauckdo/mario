@@ -43,37 +43,51 @@ def get_density_score(structures, d=3, l=14):
 
   # get intervals representing scenes, eg. 3-17, 18-34n
   intervals = get_intervals(level.n_cols, l, 3)
-  logger.info("Number of columns: {}".format(level.n_cols))
-  logger.info("Scenes in the level: \n{}".format(intervals))
+  logger.debug("Number of columns: {}".format(level.n_cols))
+  logger.debug("Scenes in the level: \n{}".format(intervals))
 
   enemies = []
   for start_col, end_col in intervals:
     enemies.append(get_enemy_density(level, start_col, end_col))
 
-  logger.info("Enemies on each interval: \n{}".format(enemies))
+  logger.debug("Enemies on each interval: \n{}".format(enemies))
   enemies = [(abs(i-d)) for i in enemies]
   score = sum(enemies)
-  logger.info("Score: {}".format(score))
+  logger.debug("Score: {}".format(score))
   return score
-  logger.info("Enemies found on each interval: \n{}".format(enemies))
+  logger.debug("Enemies found on each interval: \n{}".format(enemies))
 
 def get_increasing_density_score(structures, d=2, l=14):
-  logger.info("Calculating density...")
+  logger.debug("Calculating density...")
   level = create_level(structures)
 
   # get intervals representing scenes, eg. 3-17, 18-34n
   intervals = get_intervals(level.n_cols, l, 3)
-  logger.info("Number of columns: {}".format(level.n_cols))
-  logger.info("Scenes in the level: \n{}".format(intervals))
+  logger.debug("Number of columns: {}".format(level.n_cols))
+  logger.debug("Scenes in the level: \n{}".format(intervals))
 
   enemies = []
   for start_col, end_col in intervals:
     enemies.append(get_enemy_density(level, start_col, end_col))
 
-  logger.info("Enemies on each interval: \n{}".format(enemies))
+  logger.debug("Enemies on each interval: \n{}".format(enemies))
   enemies = [(abs(n-(d*i))) for i, n in zip(range(len(enemies)), enemies)]
-  logger.info("After processing: \n{}".format(enemies))
+  logger.debug("After processing: \n{}".format(enemies))
   score = sum(enemies)
-  logger.info("Score: {}".format(score))
+  logger.debug("Score: {}".format(score))
   return score
-  logger.info("Enemies found on each interval: \n{}".format(enemies))
+  logger.debug("Enemies found on each interval: \n{}".format(enemies))
+
+def get_platforms(level):
+  platform_nodes = 0
+  for n in level.nodes:
+    if n.tile == "X":
+      platform_nodes += 1
+  return platform_nodes
+
+def get_enemies(level):
+  enemy_nodes = 0
+  for n in level.nodes:
+    if n.tile in constants.enemy_tiles:
+      enemy_nodes += 1
+  return enemy_nodes

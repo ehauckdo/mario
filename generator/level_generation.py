@@ -3,8 +3,8 @@ import random
 import copy
 import sys
 from . import constants
-from .scoring import get_density_score
-from .substructure import Substructure, Node, Connector
+from .scoring import get_density_score, get_increasing_density_score
+from .structure import Structure, Node, Connector
 from .level import Level
 
 logger = logging.getLogger(__name__)
@@ -12,13 +12,11 @@ logger = logging.getLogger(__name__)
 def print_level(structures):
   directions = {"r":">", "l":"<", "u":"^", "d":"v"}
   level = Level()
-  base_structure = Substructure(-1)
+  base_structure = Structure(-1)
 
   for s in structures:
-    #logger.info("Appending structure...")
     base_structure.nodes.extend(s.nodes)
     base_structure.connecting.extend(s.connecting)
-    #logger.info("{}, {}".format(len(base_structure.nodes), len(base_structure.connecting)))
   return base_structure.pretty_print()
 
 def backtrack(structures):
@@ -33,7 +31,10 @@ def backtrack(structures):
   return structures
 
 def check_connectors(structures):
-  """Disable connectors that don't have sufficient space around them"""
+  """
+    Experimental function
+    Disable connectors that don't have sufficient space around them
+  """
   level_matrix = {}
   for str in structures:
     for n in str.nodes:
@@ -60,7 +61,13 @@ def check_connectors(structures):
             break
 
 def prepare(structure1, c1, structure2, c2):
-  """Prepare structure 2 to to be connected with structure1"""
+  """
+    Prepare structure2 to to be connected with structure1
+    1 - Adjust coordinates of all nodes
+    2 - Set conectors as combined
+    3 - Remove combinables from list of connectors
+    4 - Remove nodes outside of screen bounds
+  """
   horizontal = {"r": -1, "l": 1, "u": 0, "d": 0}
   vertical = {"r": 0, "l": 0, "u": -1, "d": 1}
 
@@ -86,22 +93,22 @@ def prepare(structure1, c1, structure2, c2):
   return structure2
 
 def has_collision(structures, ignore_air=True):
-  """Given a list of structures, check if they would collide"""
+  """Given a list of structures, any tiles collide"""
   level_matrix = {}
   for str in structures:
     for n in str.nodes:
       if (n.r, n.c) not in level_matrix.keys():
         level_matrix[(n.r,n.c)] = n.tile
       else:
-        if(ignore_air) and (n.tile == "-"
+        if(not ignore_air) and (n.tile == "-"
             or level_matrix[(n.r,n.c)] == "-"):
           return True
   return False
 
-def get_available_substitutions(structures):
+def available_substitutions(structures):
   available =[]
   for str in structures:
-    available.extend(str.get_available_substitutions())
+    available.extend(str.available_substitutions())
 
   return available
 
@@ -111,10 +118,63 @@ def list_to_dict(structures, g_s, g_f):
     dict_structures[s.id] = s
   return dict_structures
 
-def generate_level(substructures, g_s, g_f, minimum_count=10):
+def greed_search(g_s, g_f, structures):
+  logger.info("starting BFS")
+  original_structures = list_to_dict(structures, g_s, g_f)
 
-  original_substructures = list_to_dict(substructures, g_s, g_f)
-  usage_stats = dict.fromkeys(original_substructures.keys(), 0)
+  queue = [(get_density_score([g_s]), [g_s])]
+
+  while len(queue) > 0:
+    density, current = queue.pop(0)
+
+    if len(current) == 30:
+      logger.info("Finished generation")
+      logger.info("Level: \n{}". format(print_level(current)))
+      generated_structure = Structure(-1)
+      #print("Length: {}".format(len(level)))
+      for s in current:
+        generated_structure.nodes.extend(s.nodes)
+      return generated_structure, len(current)
+      #sys.exit()
+
+    substitutions = available_substitutions(current)
+
+    for i in range(len(substitutions)):
+      level = copy.deepcopy(current)
+      str1, c1, str2_id, c2_sub_id = available_substitutions(level)[i]
+
+      if str2_id == g_s.id or str2_id == g_f.id:
+          continue
+
+      str2 = copy.deepcopy(original_structures[str2_id])
+      c2 = str2.get_connector(c2_sub_id)
+
+      str2 = prepare(str1, c1, str2, c2)
+      level.append(str2)
+
+      check_connectors(level)
+      collides = has_collision(level)
+      substitutions = available_substitutions(level)
+
+      if len(substitutions) <= 0 or collides:
+        continue
+
+      logger.info("saving expansion {}".format(i))
+
+      queue.append((get_density_score(level), level))
+
+    queue.sort(key=lambda x: x[0])
+    logger.info("Sorted queue:")
+    for density, level in queue:
+      logger.info("Score {}". format(density))
+      logger.info("Level: \n{}". format(print_level(level)))
+    queue = queue[:1]
+  return None, -1
+
+def generate_level(structures, g_s, g_f, minimum_count=10):
+
+  original_structures = list_to_dict(structures, g_s, g_f)
+  usage_stats = dict.fromkeys(original_structures.keys(), 0)
 
   count_substitutions = 0
   count_backtrack = 0
@@ -126,24 +186,25 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
   level.append(copy.deepcopy(g_s))
   logger.info("Initial structure generated!\n{}". format(print_level(level)))
 
-  available_substitutions = get_available_substitutions(level)
+  substitutions = available_substitutions(level)
 
   logger.info("Starting substitution process...")
-  logger.info("Available subsistutions: {}".format(len(available_substitutions)))
+  logger.info("Available subsistutions: {}".format(len(substitutions)))
 
-  while len(available_substitutions) > 0:
+  while len(substitutions) > 0:
 
     while True:
       # logger.info("All Available substitutions: ")
-      # for str1, c1, str2_id, c2_id in available_substitutions:
+      # for str1, c1, str2_id, c2_id in substitutions:
       #   logger.info("Structure {}, connector {}, to Structure {} via connector {}".format(str1.id, c1, str2_id, c2_id))
-      while len(available_substitutions) == 0:
+      while len(substitutions) == 0:
         level = backtrack(level)
-        available_substitutions = get_available_substitutions(level)
-      str1, c1, str2_id, c2_sub_id = random.choice(available_substitutions)
-      available_substitutions.remove((str1, c1, str2_id, c2_sub_id))
+        substitutions = available_substitutions(level)
+        count_backtrack += 1
+      str1, c1, str2_id, c2_sub_id = random.choice(substitutions)
+      substitutions.remove((str1, c1, str2_id, c2_sub_id))
       if str2_id == g_s.id or str2_id == g_f.id: continue
-      str2 =  copy.deepcopy(original_substructures[str2_id])
+      str2 =  copy.deepcopy(original_structures[str2_id])
       c2 = str2.get_connector(c2_sub_id)
 
       #logger.info("Trying to append structure {} using its connector {} via structure {} with connector {}".format(str2_id, c2, str1.id, c1))
@@ -153,16 +214,16 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
       level.append(str2)
 
       check_connectors(level)
-      collides = has_collision(level)
-      available_substitutions = get_available_substitutions(level)
+      collides = has_collision(level, True)
+      substitutions = available_substitutions(level)
       #density = get_density_score(level, 2)
 
-      if len(available_substitutions) <= 0 or collides:
-        if len(available_substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
+      if len(substitutions) <= 0 or collides:
+        if len(substitutions) <= 0: logger.info("Simulated structure has no available substitutions, trying next...")
         if collides: logger.info("Collision Happened!")
         c1.combined = None # reset state of first connector
         level = backtrack(level)
-        available_substitutions = get_available_substitutions(level)
+        substitutions = available_substitutions(level)
         #input("Press Enter to continue...")
       else:
         #logger.info("Sucessfull substitution")
@@ -174,69 +235,81 @@ def generate_level(substructures, g_s, g_f, minimum_count=10):
         break
 
     count_substitutions += 1
+    if count_backtrack > 500:
+      break
 
-    logger.info("Available substitutions: {}".format(len(available_substitutions)))
+    logger.info("Available substitutions: {}".format(len(substitutions)))
     logger.info("Substitutions applied so far: {}".format(count_substitutions))
     logger.info("\n{}".format(print_level(level)))
 
     #if highest_col >= 202:
-    if len(level) == 30-1:
-      for str1, c1, str2_id, c2_sub_id in available_substitutions:
-        if str2_id == g_f.id:
-          str2 = copy.deepcopy(g_f)
-          c2 = str2.get_connector(c2_sub_id)
-          logger.info("Trying to append g_f {} using its connector {} via structure {} with connector {}".format(g_f.id, c2, str1.id, c1))
-          str2 = prepare(str1, c1, str2, c2)
-          #if not has_collision(level+[str2]):
-          level.append(str2)
-          logger.info("g_f finished!")
-          usage_stats[str2_id] += 1
-          print("Reached column 202!")
-          finished = True
-          break
-          #else:
-          #  logger.info("g_f collided!")
+    if len(level) == minimum_count:
+      # OPTION 1: try to append g_f
+      # for str1, c1, str2_id, c2_sub_id in substitutions:
+      #   if str2_id == g_f.id:
+      #     str2 = copy.deepcopy(g_f)
+      #     c2 = str2.get_connector(c2_sub_id)
+      #     logger.info("Trying to append g_f {} using its connector {} via structure {} with connector {}".format(g_f.id, c2, str1.id, c1))
+      #     str2 = prepare(str1, c1, str2, c2)
+      #     #if not has_collision(level+[str2]):
+      #     level.append(str2)
+      #     logger.info("g_f finished!")
+      #     usage_stats[str2_id] += 1
+      #     print("Reached column 202!")
+      #     finished = True
+      #     break
+      #
+      # OPTION 2: simply cut off the level at 202
+      for struct in level:
+        for n in reversed(struct.nodes):
+          if n.c > 201:
+            struct.nodes.remove(n)
       finished = True
       break
 
     if finished:
       break
 
-  generated_structure = Substructure(-1)
+  generated_structure = Structure(-1)
   print("Length: {}".format(len(level)))
   for s in level:
     generated_structure.nodes.extend(s.nodes)
   return generated_structure, usage_stats, count_substitutions
 
-def instantiate_base_level(id_substructures):
-  g_s = Substructure(id_substructures)
+def instantiate_base_level(id_structures):
+  g_s = Structure(id_structures)
   for c in range(3):
     platform = Node(15, c, "X", "Solid", g_s)
     g_s.append_node(platform)
+    platform = Node(14, c, "X", "Solid", g_s)
+    g_s.append_node(platform)
 
-    for r in range(15):
-      if r == 14 and c == 1: continue
+    for r in range(14):
+      if r == 13 and c == 1: continue
       air = Node(r, c, "-", "Non-Solid", g_s)
       g_s.append_node(air)
 
-  mario = Node(14, 1, "M", "Solid", g_s)
+  mario = Node(13, 1, "M", "Solid", g_s)
   g_s.append_node(mario)
 
   connector = Connector(15, 3, "r", g_s)
   g_s.append_connector(connector)
 
-  id_substructures += 1
-  g_f = Substructure(id_substructures)
+  id_structures += 1
+  g_f = Structure(id_structures)
 
   for c in range(1, 3):
     platform = Node(15, c, "X", "Solid", g_f)
     g_f.append_node(platform)
+    platform = Node(14, c, "X", "Solid", g_f)
+    g_f.append_node(platform)
 
-    for r in range(15):
+    for r in range(14):
+      if r == 13 and c == 2: continue
       air = Node(r, c, "-", "Non-Solid", g_f)
       g_f.append_node(air)
 
-  finish = Node(14, 2, "F", "Solid", g_f)
+  finish = Node(13, 2, "F", "Solid", g_f)
   g_f.append_node(finish)
   connector = Connector(15, 0, "l", g_f)
   g_f.append_connector(connector)

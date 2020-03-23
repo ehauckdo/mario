@@ -14,7 +14,7 @@ def select(points: np.ndarray,
            count_delta: int = 1,
            radius: int = 10,
            radius_delta: int = 0.01,
-           max_iterations_count: int = 15,
+           max_iterations_count: int = 1000,
            min_cell_size: int = 2,
            max_cell_size: int = 100) -> np.ndarray:
     """

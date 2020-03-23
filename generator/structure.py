@@ -6,37 +6,42 @@ from .level import Level
 logger = logging.getLogger(__name__)
 
 class Connector:
-  def __init__(self, r, c, direction, substructure=None):
+  def __init__(self, r, c, direction, structure=None):
     self.r = r
     self.c = c
     self.direction = direction
     self.combined = None
     self.combinable = []
-    self.substructure = substructure
+    self.structure = structure
 
   def __repr__(self):
     return "(sub_id:{}, ({},{}))".format(self.sub_id, self.r, self.c)
 
 class Node:
-  def __init__(self, r, c, tile="-", type="Non-Solid", substructure=None):
+  def __init__(self, r, c, tile="-", type="Non-Solid", structure=None):
     self.r = r
     self.c = c
     self.tile = tile
     self.type = type
-    self.substructure = substructure
+    self.structure = structure
     self.edges = []
 
   def __repr__(self):
     return "({},{})".format(self.r, self.c)
 
-class Substructure:
+class Structure:
 
-  def __init__(self, substructure_id):
-    self.id = substructure_id
+  def __init__(self, structure_id):
+    self.id = structure_id
     self.sub_id = 0 # sub_id for connectors
     self.nodes = []
     self.connecting = []
     self.enemies = 0
+
+  def n_connecting(self):
+      return len(self.connecting)
+  def n_enemies(self):
+      return self.enemies
 
   def append_node(self, n):
     self.nodes.append(n)
@@ -66,7 +71,7 @@ class Substructure:
     for node in self.nodes+self.connecting:
       node.c = node.c - smallest_c
 
-  def get_available_substitutions(self):
+  def available_substitutions(self):
     substitutions = []
     for n in self.connecting:
       if n.combined == None:

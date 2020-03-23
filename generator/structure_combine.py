@@ -4,12 +4,10 @@ from .reachability import is_reachable
 logger = logging.getLogger(__name__)
 
 def do_overlap(s1, s2):
-  # TODO: improve performance by building a matrix
   for n1 in s1.nodes:
     for n2 in s2.nodes:
       if n1.c == n2.c and n1.r == n2.r:
-        #return False
-        logger.debug(">>> Overlap Ocurred between structures {} and {}".format(s1.id, s2.id))
+        logger.debug("Overlap Ocurred between structures {} and {}".format(s1.id, s2.id))
         return True
   return False
 
@@ -50,20 +48,18 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
   else:
     return False
 
-def find_substructures_combinations(substructures):
+def find_combinations(structures):
 
   main_directions = {"r", "u"}
   opposite_directions = {"r":"l", "l":"r", "u":"d", "d":"u"}
 
   connecting_nodes = []
-  for s in substructures:
+  for s in structures:
     connecting_nodes.extend(s.connecting)
 
-  # go through all substructures checking connecting nodes
-  for s1 in substructures:
-  #for index1 in range(len(substructures)-1):
-    #s1 = substructures[index1]
-    logger.debug("-Start: connecting substructures in {}".format(s1.id))
+  # go through all structures checking connecting nodes
+  for s1 in structures:
+    logger.debug("-Start: connecting structures in {}".format(s1.id))
 
     for n1 in s1.connecting:
       direction = n1.direction
@@ -74,18 +70,16 @@ def find_substructures_combinations(substructures):
         continue
       opposite = opposite_directions[direction]
 
-      # for a certain connecting node n1, go through all substructures
-      # again and search for a connecting node n2 that has opposite
-      # direction
-      for s2 in substructures:
-        if s1.id == s2.id: continue
+      # for a certain connecting node n1, go through all structures again
+      # and search for a connecting node n2 that has opposite direction
+      for s2 in structures:
+        if s1.id == s2.id: continue # ignore itself
 
         for n2 in s2.connecting:
           n2_direction = n2.direction
 
-          # second condition ensures that both substructures
-          # are connecting at the same height/
           if n2_direction == opposite:
+            # second if ensures that both nodes connect at the same height
             if n2_direction == "d" or n1.r == n2.r:
               logger.debug("---Opposing Node: {}, Direction: {}".format(n2, n2_direction))
 
@@ -99,4 +93,4 @@ def find_substructures_combinations(substructures):
                 logger.debug("--- Not combinable")
 
       logger.debug("--Finish: Processing connecting node {}".format(n1))
-    logger.debug("-Finish: connecting substructures in {}".format(s1.id))
+    logger.debug("-Finish: connecting structures in {}".format(s1.id))

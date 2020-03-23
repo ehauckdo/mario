@@ -1,9 +1,9 @@
 import logging
 from . import constants
-from .substructure import Substructure, Node, Connector
+from .structure import Structure, Node, Connector
 logger = logging.getLogger(__name__)
 
-substructure_id = 1
+structure_id = 1
 
 def pretty_print_graph_map(graph_map, tiles=False):
 
@@ -36,7 +36,7 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
   for x in range(x_min, x_max+1):
     for y in range(y_min, y_max+1):
       if graph_map[x][y] != None and graph_map[x][y][1] != id:
-        #logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].substructure.id))
+        #logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y].structure.id))
         logger.info("Collision at x {}, y {}: {}".format(x,y, graph_map[x][y][1]))
         collisions.append([graph_map[x][y][1],x, y])
 
@@ -54,12 +54,12 @@ def update_graph_map(map_data, graph_map, id, x_min, x_max, y_min, y_max):
   pretty_print_graph_map(graph_map)
   return collisions
 
-def get_substructures(map_data, points, D=5):
+def create(map_data, points, D=5):
   graph_map = [[None for i in range(map_data.n_cols)] for i in range(map_data.n_rows)]
 
-  substructures = {}
+  structures = {}
   cluster_collisions = {}
-  global substructure_id
+  global structure_id
 
   clusters = []
   finished_clusters = []
@@ -70,14 +70,14 @@ def get_substructures(map_data, points, D=5):
   for p in points:
     # set id of cluster in graph map
     tile = map_data.get(p[0], p[1])
-    graph_map[p[0]][p[1]] = (tile, substructure_id)
+    graph_map[p[0]][p[1]] = (tile, structure_id)
 
     # initialize an empty list to save collisions of this cluster
-    cluster_collisions[substructure_id] = {}
-    substructures[substructure_id] = Substructure(substructure_id)
-    logger.debug("Setting core point (id {}) x: {}, y: {}".format(substructure_id, p[0],p[1]))
-    clusters.append([substructure_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u", D])
-    substructure_id += 1
+    cluster_collisions[structure_id] = {}
+    structures[structure_id] = Structure(structure_id)
+    logger.debug("Setting core point (id {}) x: {}, y: {}".format(structure_id, p[0],p[1]))
+    clusters.append([structure_id, p[0], p[0], p[1], p[1], {"l":"d", "d":"r", "r":"u", "u":"l"}, "u", D])
+    structure_id += 1
 
   pretty_print_graph_map(graph_map)
 
@@ -145,34 +145,34 @@ def get_substructures(map_data, points, D=5):
 
   logger.info("Connecting nodes: ")
   for c in connecting_nodes:
-    #logger.info("Node substructure_id: {}, r: {}, c: {} ".format(c.substructure.id, c.r, c.c))
+    #logger.info("Node structure_id: {}, r: {}, c: {} ".format(c.structure.id, c.r, c.c))
     logger.info("Node: {}".format(c))
     #logger.info(c.edges)
 
-  substructures = generate_substructures(graph_map, connecting_nodes)
+  structures = generate_structures(graph_map, connecting_nodes)
 
-  logger.info("Generated Substructures: ")
-  for s in substructures:
+  logger.info("Generated structures: ")
+  for s in structures:
     logger.info(s)
 
-  return substructures
+  return structures
 
-def generate_substructures(graph_map, connecting_nodes):
-  substructures = {}
+def generate_structures(graph_map, connecting_nodes):
+  structures = {}
 
   for r in range(len(graph_map)):
     for c in range(len(graph_map[r])):
       n = graph_map[r][c]
 
       if n != None:
-        if n[1] not in substructures.keys():
-          substructures[n[1]] = Substructure(n[1])
+        if n[1] not in structures.keys():
+          structures[n[1]] = Structure(n[1])
 
-        node = Node(r, c, n[0], "Solid" if n[0] in constants.platform_tiles else "Non-Solid", substructures[n[1]])
-        substructures[n[1]].append_node(node)
+        node = Node(r, c, n[0], "Solid" if n[0] in constants.platform_tiles else "Non-Solid", structures[n[1]])
+        structures[n[1]].append_node(node)
 
   for r, c, direction, id in connecting_nodes:
-    connector = Connector(r, c, direction, substructures[id])
-    substructures[id].append_connector(connector)
+    connector = Connector(r, c, direction, structures[id])
+    structures[id].append_connector(connector)
 
-  return list(substructures.values())
+  return list(structures.values())
