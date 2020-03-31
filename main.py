@@ -193,35 +193,11 @@ if __name__ == '__main__':
   structure_combine.find_combinations(structures + [g_s, g_f])
   save_structures(g_s, g_f, structures)
 
-  ground_levels = []
-
   for n in range(opt.output_number):
-
     logging.info("Generating level {}".format(n))
     level, stats, structures_used = level_generation.generate_level(
        structures, g_s, g_f, opt.min_structures)
-    #ground_levels.append((scoring.get_enemies(level), level))
-    #level, structures_used = level_generation.greed_search(g_s, g_f, structures)
-    #if level == None:
-    #  break
-    #sys.exit()
     level_path = "output/levels/level_{}.txt".format(n)
     print("Rendering level {}".format(n))
     level.save_as_level(level_path)
     render_structure(level_path, "output/levels/level_{}.png".format(n))
-
-  # logging.info("LEVELS ORDERED BY GROUND (MAX): ")
-  # ground_levels.sort(key=lambda x: x[0], reverse=True)
-  # for score, level in ground_levels[:10]:
-  #   logging.info("Score: {}".format(score))
-  #   logging.info("\n{}".format(level.pretty_print()))
-  #   level_path = "output/levels/max_enemy/level_{}.txt".format(score)
-  #   level.save_as_level(level_path)
-  #
-  # logging.info("LEVELS ORDERED BY GROUND (MIN): ")
-  # ground_levels.sort(key=lambda x: x[0])
-  # for score, level in ground_levels[:10]:
-  #   logging.info("Score: {}".format(score))
-  #   logging.info("\n{}".format(level.pretty_print()))
-  #   level_path = "output/levels/min_enemy/level_{}.txt".format(score)
-  #   level.save_as_level(level_path)
