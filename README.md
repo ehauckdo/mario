@@ -2,6 +2,8 @@
 
 A generator of levels using the MarioAI framework.
 
+Screenshots of generated levels can be found in samples/ folder.
+
 ### Execution
 
 ```main.py [options]```
