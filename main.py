@@ -8,37 +8,20 @@ from generator import structure_combine
 from generator import scoring
 from helper import io
 import numpy as np
+from helper import log
 from tools.render_level.render_level import render_structure
 import logging
 import logging.handlers
 
-
-# use this to set a size limit for the log file
-class TruncatedFileHandler(logging.handlers.RotatingFileHandler):
-    def __init__(self, filename, mode='a', maxBytes=0, encoding=None, delay=0):
-        super(TruncatedFileHandler, self).__init__(
-            filename, mode, maxBytes, 0, encoding, delay)
-
-    def doRollover(self):
-        """Truncate the file"""
-        if self.stream:
-            self.stream.close()
-        dfn = self.baseFilename + ".1"
-        if os.path.exists(dfn):
-            os.remove(dfn)
-        os.rename(self.baseFilename, dfn)
-        os.remove(dfn)
-        self.mode = 'w'
-        self.stream = self._open()
-# filehandler = TruncatedFileHandler("output/log", "w", 9000000)
-# logging.basicConfig(
-#     #format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-#     level=logging.DEBUG, handlers=[filehandler])
+# uncomment for truncated file
+#filehandler = log.TruncatedFileHandler("output/log", "w", 9000000)
+#logging.basicConfig(
+    #format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+#    level=logging.DEBUG, handlers=[filehandler])
 
 logging.basicConfig(filename="output/log",
-                   level=logging.INFO,
-                   filemode='w')
-#logging.disable(logging.CRITICAL)
+                  level=logging.INFO,
+                  filemode='w')
 
 def parse_args(args):
   usage = "usage: %prog [options]"
@@ -200,35 +183,15 @@ if __name__ == '__main__':
   #g_s, g_f, structures = load_structures()
   g_s, g_f, structures = extract_structures(data)
 
-  #logging.info("Number of structures before: {}".format(len(structures)))
+  #logging.info("Num of structures before subset: {}".format(len(structures)))
   #structures = get_subset(structures)
-  #logging.info("Number of structures after: {}".format(len(structures)))
+  #logging.info("Num of structures after subset: {}".format(len(structures)))
   #minimize_combinations(structures + [g_s, g_f])
 
   selected = [s.id for s in structures]
   logging.info("Selected structures: {}".format(selected))
   structure_combine.find_combinations(structures + [g_s, g_f])
   save_structures(g_s, g_f, structures)
-  #sys.exit()
-
-  # for s in structures:
-  #   logging.info("structure {}:".format(s.id))
-  #   logging.info("\n{}".format(s.pretty_print()))
-  #   logging.info("Combinables:")
-  #   for c in s.connecting:
-  #     logging.info("Connecting {}".format(c.sub_id))
-  #     for s2_id, s2_c in c.combinable:
-  #       logging.info("Connector {} connects to structure: {} "\
-  #                  "via Connector {}".format(c, s2_id, s2_c))
-  #
-  # logging.info("structure {}:".format(g_s.id))
-  # logging.info("\n{}".format(g_s.pretty_print()))
-  # logging.info("Combinables:")
-  # for c in g_s.connecting:
-  #   for s2_id, s2_c in c.combinable:
-  #     logging.info("Connector {} connects to structure: {} "\
-  #                "via Connector {}".format(c, s2_id, s2_c))
-  #sys.exit()
 
   ground_levels = []
 
