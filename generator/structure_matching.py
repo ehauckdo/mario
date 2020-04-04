@@ -48,7 +48,7 @@ def are_combinable(s1, s2, n1, n2, d1, d2):
   else:
     return False
 
-def find_combinations(structures):
+def compute_combinations(structures):
 
   main_directions = {"r", "u"}
   opposite_directions = {"r":"l", "l":"r", "u":"d", "d":"u"}
