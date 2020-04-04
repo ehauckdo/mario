@@ -3,8 +3,8 @@ import optparse
 import logging
 from pathlib import Path
 from generator import level_generation
-from generator import structure_extraction
-from generator import structure_combine
+from generator import structure_identification
+from generator import structure_matching
 from generator import scoring
 from helper import io
 import numpy as np
@@ -109,7 +109,7 @@ def extract_structures(data):
   # with a minimum of d size each
   structures = []
   for level, n, d in data:
-    level_structures = structure_extraction.extract_structures(level, n, d)
+    level_structures = structure_identification.extract_structures(level, n, d)
     structures.extend(level_structures)
 
   # Instiate the base starting and finishing structures
@@ -190,7 +190,7 @@ if __name__ == '__main__':
 
   selected = [s.id for s in structures]
   logging.info("Selected structures: {}".format(selected))
-  structure_combine.find_combinations(structures + [g_s, g_f])
+  structure_matching.compute_combinations(structures + [g_s, g_f])
   save_structures(g_s, g_f, structures)
 
   for n in range(opt.output_number):
