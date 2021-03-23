@@ -1,0 +1,25 @@
+brotlipy==0.7.0
+certifi==2020.12.5
+cffi @ file:///opt/concourse/worker/volumes/live/0ef369cc-6ba0-47e7-75da-208c6400381d/volume/cffi_1613246948181/work
+chardet @ file:///opt/concourse/worker/volumes/live/c798b2ee-88b1-4341-6830-161a92c2399e/volume/chardet_1607706832595/work
+conda==4.9.2
+conda-package-handling @ file:///opt/concourse/worker/volumes/live/a7e34989-4c54-4cb6-4156-4e58ee270730/volume/conda-package-handling_1603018121300/work
+cryptography @ file:///opt/concourse/worker/volumes/live/61d16c80-891a-48c5-6376-6899ef51ea28/volume/cryptography_1613401441154/work
+cycler==0.10.0
+idna @ file:///home/linux1/recipes/ci/idna_1610986105248/work
+kiwisolver==1.2.0
+matplotlib==3.3.2
+numpy==1.19.2
+Pillow==7.2.0
+pycosat==0.6.3
+pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
+pyOpenSSL @ file:///tmp/build/80754af9/pyopenssl_1608057966937/work
+pyparsing==2.4.7
+PySocks @ file:///opt/concourse/worker/volumes/live/85a5b906-0e08-41d9-6f59-084cee4e9492/volume/pysocks_1594394636991/work
+python-dateutil==2.8.1
+requests @ file:///tmp/build/80754af9/requests_1608241421344/work
+ruamel-yaml==0.15.87
+scipy==1.5.2
+six @ file:///opt/concourse/worker/volumes/live/5b31cb27-1e37-4ca5-6e9f-86246eb206d2/volume/six_1605205320872/work
+tqdm @ file:///tmp/build/80754af9/tqdm_1611857934208/work
+urllib3 @ file:///tmp/build/80754af9/urllib3_1611694770489/work
