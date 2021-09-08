@@ -10,7 +10,7 @@ idna @ file:///home/linux1/recipes/ci/idna_1610986105248/work
 kiwisolver==1.2.0
 matplotlib==3.3.2
 numpy==1.19.2
-Pillow==7.2.0
+Pillow==8.3.2
 pycosat==0.6.3
 pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
 pyOpenSSL @ file:///tmp/build/80754af9/pyopenssl_1608057966937/work
